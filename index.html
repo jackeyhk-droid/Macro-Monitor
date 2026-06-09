@@ -40,9 +40,14 @@
   /* ---------- shell ---------- */
   #app{display:none;max-width:1440px;margin:0 auto;padding:0 20px 60px}
   .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 0 14px;flex-wrap:wrap}
-  .brand{display:flex;align-items:baseline;gap:12px}
-  .brand .mark{font-family:var(--mono);font-weight:700;color:var(--amber);letter-spacing:.16em;font-size:12px;text-transform:uppercase}
-  .brand .sub{color:var(--tx3);font-size:12px}
+  .brand{display:flex;align-items:baseline;gap:14px}
+  .brand .mark{font-family:var(--mono);font-weight:800;letter-spacing:.06em;font-size:26px;text-transform:uppercase;
+    background:linear-gradient(90deg,#f5a623 0%,#ffd479 22%,#58a6ff 50%,#ffd479 78%,#f5a623 100%);
+    background-size:200% auto;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;
+    animation:mm-sheen 7s linear infinite}
+  @keyframes mm-sheen{to{background-position:200% center}}
+  @media (prefers-reduced-motion:reduce){.brand .mark{animation:none}}
+  .brand .sub{color:var(--tx3);font-size:12px;letter-spacing:.04em}
   .topright{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
   .vintage{font-family:var(--mono);font-size:11px;color:var(--tx3);text-align:right;line-height:1.5}
   .vintage b{color:var(--tx2);font-weight:500}
@@ -1832,8 +1837,8 @@ const DATA = {
       "ann6m": 3.1
     },
     "supercore": {
-      "yoy": null,
-      "mom": null
+      "yoy": 0,
+      "mom": -0.1
     },
     "realWages": {
       "yoy": -0.3,
@@ -2104,8 +2109,8 @@ const DATA = {
       "ann6m": 3.8
     },
     "supercore": {
-      "yoy": null,
-      "mom": null
+      "yoy": 3.3,
+      "mom": 0.2
     },
     "trimmedMean": {
       "yoy": 2.4
@@ -2346,14 +2351,16 @@ function renderLiquidity(){
   const kpis='<div class="grid g4">'
     + kpi(L("Net liquidity","淨流動性"),"WALCL − TGA − RRP",
         (nl.tn==null?NA:'$'+nl.tn.toFixed(2)+'<span class="u">T</span>')+' <span class="pill '+zcls+'">'+zlabel+'</span>',
-        kitem(L("Zone","區間"), zlabel))
-    + kpi(L("SOFR − IORB","SOFR − IORB"),"funding spread",
-        (nl.sofrIorb==null?NA:(nl.sofrIorb>0?'+':'')+nl.sofrIorb+'<span class="u">bps</span>'),"")
+        kitem(L("SOFR − IORB","SOFR − IORB"), nl.sofrIorb==null?NA:(nl.sofrIorb>0?'+':'')+nl.sofrIorb+' bps'))
     + kpi(L("Fed assets","聯準會資產"),"WALCL",
-        (nl.walcl==null?NA:'$'+nl.walcl.toFixed(2)+'<span class="u">T</span>'),"")
-    + kpi(L("TGA / RRP","TGA / RRP"),"drains",
+        (nl.walcl==null?NA:'$'+nl.walcl.toFixed(2)+'<span class="u">T</span>'),
+        kitem(L("Balance sheet","資產負債表"), L("weekly","每週")))
+    + kpi(L("Treasury account","財政部帳戶"),"TGA",
         (nl.tga==null?NA:'$'+nl.tga.toFixed(2)+'<span class="u">T</span>'),
-        kitem("RRP", nl.rrp==null?NA:'$'+Math.round(nl.rrp)+'B'))
+        kitem(L("Drain","抽水"), nl.tga==null?NA:'$'+Math.round(nl.tga*1000)+'B'))
+    + kpi(L("Reverse repo","逆回購"),"RRP",
+        (nl.rrp==null?NA:'$'+Math.round(nl.rrp)+'<span class="u">B</span>'),
+        kitem(L("Drain","抽水"), L("near zero","接近零")))
     +'</div>';
   const zoneNote='<div class="note"><b>'+L("Zone framework","區間框架")+'.</b> '
     + L("Supportive &gt; $6.0T \u00b7 uncomfortable $5.5\u20136.0T \u00b7 stress &lt; $5.5T (maps to roughly S&P 6,000\u20136,200). With RRP drained to near zero, the old liquidity buffer is gone \u2014 TGA swings now pass straight through to reserves.",
@@ -2364,8 +2371,8 @@ function renderLiquidity(){
     + zoneNote
     +'<h2 class="sec">'+L("522-week net liquidity vs S&P 500","522 週淨流動性 vs S&P 500")+'</h2>'
     +'<div class="chartbox"><div class="ch-title">'+L("Net liquidity ($T, left) vs S&P 500 (right)","淨流動性（兆美元，左軸）vs S&P 500（右軸）")+'</div>'
-    +'<div class="ch-note">'+L("Dashed lines mark the $6.0T / $5.5T zone thresholds. NL = WALCL − TGA − RRP.","虛線標示 $6.0T / $5.5T 區間門檻。NL = WALCL − TGA − RRP。")+'</div>'
-    +'<div class="cwrap" style="height:340px"><canvas id="ch-nl" role="img" aria-label="Line chart of net liquidity versus S and P 500 over 522 weeks"></canvas></div></div>';
+    +'<div class="ch-note">'+L("Each axis is scaled to its own range, so curve crossings reflect genuine co-movement. Hover for synced readouts; dashed green/red lines mark the $6.0T / $5.5T zone thresholds.","兩軸各自依其區間縮放，曲線交叉反映真實連動。游標可同步讀數；綠／紅虛線標示 $6.0T / $5.5T 區間門檻。")+'</div>'
+    +'<div class="cwrap" style="height:clamp(440px, 64vh, 700px)"><canvas id="ch-nl" role="img" aria-label="Line chart of net liquidity versus S and P 500 over 522 weeks"></canvas></div></div>';
 }
 
 /* ---------- CPI ---------- */
@@ -2538,16 +2545,26 @@ function drawCharts(panelId){
   if(panelId==="p-liq"){
     const nl=DATA.nl; if(nl&&nl.series){
       const n=nl.series.labels.length;
+      const nlv=nl.series.nl.filter(v=>v!=null), spv=nl.series.spx.filter(v=>v!=null);
+      // anchor both axes to each series' own range (+pad) so the curves' shapes are
+      // comparable and crossings reflect real co-movement, not Chart.js auto-fit.
+      const pad=(arr,p)=>{const lo=Math.min(...arr),hi=Math.max(...arr),s=(hi-lo)*p;return[lo-s,hi+s];};
+      const [nlLo,nlHi]=pad(nlv,0.08), [spLo,spHi]=pad(spv,0.08);
       mk("ch-nl",{type:"line",data:{labels:nl.series.labels,datasets:[
-        {label:"Net liquidity",yAxisID:"y",data:nl.series.nl,borderColor:"#f5a623",backgroundColor:"#f5a623",borderWidth:2,pointRadius:0,tension:.1},
-        {label:"S&P 500",yAxisID:"y1",data:nl.series.spx,borderColor:"#58a6ff",backgroundColor:"#58a6ff",borderWidth:1.5,pointRadius:0,tension:.1},
-        {label:"6.0T",yAxisID:"y",data:Array(n).fill(6.0),borderColor:"#5f6b78",borderDash:[5,4],borderWidth:1,pointRadius:0},
-        {label:"5.5T",yAxisID:"y",data:Array(n).fill(5.5),borderColor:"#5f6b78",borderDash:[2,4],borderWidth:1,pointRadius:0}
+        {label:L("Net liquidity ($T)","淨流動性 ($T)"),yAxisID:"y",data:nl.series.nl,borderColor:"#f5a623",backgroundColor:"rgba(245,166,35,.10)",fill:true,borderWidth:2.2,pointRadius:0,tension:.1,order:2},
+        {label:"S&P 500",yAxisID:"y1",data:nl.series.spx,borderColor:"#58a6ff",backgroundColor:"#58a6ff",borderWidth:1.4,pointRadius:0,tension:.1,order:3},
+        {label:L("$6.0T supportive","$6.0T 充裕"),yAxisID:"y",data:Array(n).fill(6.0),borderColor:"#3fb950",borderDash:[6,4],borderWidth:1,pointRadius:0,order:1},
+        {label:L("$5.5T stress","$5.5T 壓力"),yAxisID:"y",data:Array(n).fill(5.5),borderColor:"#f85149",borderDash:[3,4],borderWidth:1,pointRadius:0,order:1}
       ]},options:{responsive:true,maintainAspectRatio:false,interaction:{intersect:false,mode:"index"},
-        plugins:{legend:{display:false},tooltip:{titleFont:{family:FONT},bodyFont:{family:FONT}}},
+        plugins:{legend:{display:true,labels:{color:TICK,font:{family:FONT,size:11},boxWidth:18,boxHeight:2,filter:i=>i.datasetIndex<2}},
+          tooltip:{titleFont:{family:FONT},bodyFont:{family:FONT},callbacks:{label:ctx=>{
+            if(ctx.datasetIndex===0) return '  NL: $'+ctx.parsed.y.toFixed(2)+'T';
+            if(ctx.datasetIndex===1) return '  S&P 500: '+Math.round(ctx.parsed.y);
+            return null;}}},
+          mmCrosshair:{}},
         scales:{x:{ticks:{color:TICK,font:{family:FONT,size:10},maxTicksLimit:10,autoSkip:true},grid:{color:GRID}},
-                y:{position:"left",ticks:{color:TICK,font:{family:FONT,size:11},callback:v=>"$"+v+"T"},grid:{color:GRID}},
-                y1:{position:"right",ticks:{color:TICK,font:{family:FONT,size:11}},grid:{display:false}}}}});
+                y:{position:"left",min:Math.min(nlLo,5.4),max:Math.max(nlHi,6.1),ticks:{color:"#f5a623",font:{family:FONT,size:11},callback:v=>"$"+v.toFixed(1)+"T"},grid:{color:GRID},title:{display:true,text:L("Net liquidity","淨流動性"),color:"#f5a623",font:{family:FONT,size:10}}},
+                y1:{position:"right",min:spLo,max:spHi,ticks:{color:"#58a6ff",font:{family:FONT,size:11}},grid:{display:false},title:{display:true,text:"S&P 500",color:"#58a6ff",font:{family:FONT,size:10}}}}}});
     }
   }
   if(panelId==="p-cpi"){
@@ -2578,6 +2595,19 @@ function drawCharts(panelId){
         scales:{x:{ticks:{color:TICK,font:{family:FONT,size:11}},grid:{color:GRID}},
                 y:{ticks:{color:TICK,font:{family:FONT,size:11},callback:v=>v+"K"},grid:{color:c=>c.tick.value===0?"rgba(255,255,255,.25)":GRID}}}}});
   }
+}
+// Inline crosshair: vertical guide line at the hovered index (no external plugin).
+if(typeof Chart!=="undefined" && !Chart.__mmCross){
+  Chart.register({id:"mmCrosshair",
+    afterDraw(chart){
+      const t=chart.tooltip; if(!t||!t.getActiveElements||!t.getActiveElements().length) return;
+      const x=t.getActiveElements()[0].element.x, ya=chart.chartArea;
+      const ctx=chart.ctx; ctx.save();
+      ctx.beginPath(); ctx.moveTo(x,ya.top); ctx.lineTo(x,ya.bottom);
+      ctx.lineWidth=1; ctx.strokeStyle="rgba(230,237,243,.35)"; ctx.setLineDash([4,3]); ctx.stroke();
+      ctx.restore();
+    }});
+  Chart.__mmCross=true;
 }
 function mk(id,cfg){ const el=document.getElementById(id); if(!el) return; if(CHARTS[id]) CHARTS[id].destroy(); CHARTS[id]=new Chart(el,cfg); }
 
