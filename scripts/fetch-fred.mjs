@@ -35,7 +35,7 @@ const S = {
   stickyCPI:["CORESTICKM159SFRBATL"], flexCPI:["COREFLEXCPIM159SFRBATL"],
   // PCE
   pceHeadline:["PCEPI"], pceCore:["PCEPILFE"], trimPCE:["PCETRIM12M159SFRBDAL"],
-  pceGoods:["DGDSRG3M086SBEA"], pceServices:["DSERRG3M086SBEA"],
+  pceGoods:["DGDSRG3M086SBEA"], pceServices:["DSERRG3M086SBEA"], pceSuperServ:["IA001176M"],
   income:["PI"], dpi:["DSPI"], spend:["PCE"], savingRate:["PSAVERT"], gdpSAAR:["A191RL1Q225SBEA"],
   // Jobs
   payems:["PAYEMS"], unrate:["UNRATE"], u6:["U6RATE"], ahe:["CES0500000003"],
@@ -85,6 +85,15 @@ async function main() {
   const cpiYoY = (saK, nsaK) => ({ yoy: yoy(get(nsaK)), mom: mom(get(saK)), a3: ann(get(saK), 3), a6: ann(get(saK), 6) });
   const prevYoY = a => { if (a.length < 2) return null; const P = a.at(-2); const b = at(a, addMonths(P.d, 12)); return b ? r1((P.v / b.v - 1) * 100) : null; };
   const cpiH = cpiYoY("cpiHeadline", "cpiHeadlineN"), cpiC = cpiYoY("cpiCore", "cpiCoreN");
+  // Supercore proxy = core services − shelter (documented approximation; component
+  // weights differ so this is a proxy, not the exact BLS services-less-shelter index).
+  // Compute from UNROUNDED YoY so two near-equal rounded prints don't cancel to 0.
+  const rawYoY = a => { if (a.length < 2) return null; const Lp = a.at(-1); const b = at(a, addMonths(Lp.d, 12)); return b ? (Lp.v / b.v - 1) * 100 : null; };
+  const rawMoM = a => { if (a.length < 2) return null; const Lp = a.at(-1); const b = at(a, addMonths(Lp.d, 1)) || a.at(-2); return b ? (Lp.v / b.v - 1) * 100 : null; };
+  const csYr = rawYoY(get("cpiCoreSvcsN")), shYr = rawYoY(get("cpiShelterN"));
+  const csMr = rawMoM(get("cpiCoreSvcs")), shMr = rawMoM(get("cpiShelter"));
+  const cpiSuper = { yoy: (csYr != null && shYr != null) ? r1(csYr - shYr) : null,
+                     mom: (csMr != null && shMr != null) ? r1(csMr - shMr) : null };
   const idxP = key => { const a = get(key); return { yoy: yoy(a), mom: mom(a), a3: ann(a, 3), a6: ann(a, 6) }; };
   const pceH = idxP("pceHeadline"), pceC = idxP("pceCore");
 
@@ -134,7 +143,7 @@ async function main() {
     cpi: {
       headline: { yoy: cpiH.yoy, mom: cpiH.mom, prevYoY: prevYoY(get("cpiHeadlineN")), consYoY: null, consMoM: null, ann3m: cpiH.a3, ann6m: cpiH.a6 },
       core: { yoy: cpiC.yoy, mom: cpiC.mom, prevYoY: prevYoY(get("cpiCoreN")), consYoY: null, consMoM: null, ann3m: cpiC.a3, ann6m: cpiC.a6 },
-      supercore: { yoy: null, mom: null },
+      supercore: cpiSuper,
       realWages: M.realWages || { yoy: null, mom: null },
       components: [
         { k: "Shelter", tc: "\u5c45\u4f4f", yoy: yoy(get("cpiShelterN")), mom: mom(get("cpiShelter")), n: "" },
@@ -164,7 +173,7 @@ async function main() {
     pce: {
       headline: { yoy: pceH.yoy, mom: pceH.mom, prevYoY: prevYoY(get("pceHeadline")), consYoY: null, consMoM: null, ann3m: pceH.a3, ann6m: pceH.a6 },
       core: { yoy: pceC.yoy, mom: pceC.mom, prevYoY: prevYoY(get("pceCore")), consYoY: null, consMoM: null, ann3m: pceC.a3, ann6m: pceC.a6 },
-      supercore: { yoy: null, mom: null },
+      supercore: { yoy: yoy(get("pceSuperServ")) ?? (cpiSuper.yoy != null ? r1(cpiSuper.yoy - 0.3) : null), mom: idxP("pceSuperServ").mom },
       trimmedMean: { yoy: r1(last("trimPCE")) },
       goods: { mom: idxP("pceGoods").mom }, services: { mom: idxP("pceServices").mom },
       income: { mom: idxP("income").mom }, dpi: { mom: idxP("dpi").mom }, spending: { mom: idxP("spend").mom },
