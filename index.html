@@ -1,0 +1,2588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Macro Monitor — CPI · Jobs · PCE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root{
+    --bg:#0a0d11; --panel:#12161c; --panel2:#171c23; --raise:#1c2229;
+    --border:#262d37; --border2:#323b47;
+    --tx:#e6edf3; --tx2:#9aa7b4; --tx3:#5f6b78;
+    --amber:#f5a623; --amber-d:#3a2c12;
+    --up:#3fb950; --up-d:#10331b; --down:#f85149; --down-d:#3a1414;
+    --info:#58a6ff; --info-d:#11243f; --warn:#d9a441;
+    --mono:'JetBrains Mono',ui-monospace,monospace; --sans:'Inter',system-ui,sans-serif;
+    --r:8px; --r-lg:12px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--tx);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+  body{font-size:14px;line-height:1.5}
+  .mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+  a{color:var(--info);text-decoration:none}
+
+  /* ---------- gate ---------- */
+  #gate{position:fixed;inset:0;z-index:1000;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:24px}
+  .gate-card{width:100%;max-width:360px;background:var(--panel);border:1px solid var(--border);border-radius:var(--r-lg);padding:28px}
+  .gate-card .mark{font-family:var(--mono);font-weight:600;color:var(--amber);letter-spacing:.18em;font-size:11px;text-transform:uppercase}
+  .gate-card h1{font-size:18px;font-weight:600;margin:10px 0 4px}
+  .gate-card p{color:var(--tx2);font-size:12.5px;margin:0 0 18px}
+  .gate-card input{width:100%;height:42px;background:var(--bg);border:1px solid var(--border2);border-radius:var(--r);color:var(--tx);font-family:var(--mono);font-size:15px;padding:0 12px;letter-spacing:.1em}
+  .gate-card input:focus{outline:none;border-color:var(--amber)}
+  .gate-card button{width:100%;height:42px;margin-top:12px;background:var(--amber);color:#1a1206;border:none;border-radius:var(--r);font-weight:600;font-size:14px;cursor:pointer}
+  .gate-card button:hover{filter:brightness(1.05)}
+  .gate-err{color:var(--down);font-size:12px;margin-top:10px;min-height:16px}
+
+  /* ---------- shell ---------- */
+  #app{display:none;max-width:1440px;margin:0 auto;padding:0 20px 60px}
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 0 14px;flex-wrap:wrap}
+  .brand{display:flex;align-items:baseline;gap:12px}
+  .brand .mark{font-family:var(--mono);font-weight:700;color:var(--amber);letter-spacing:.16em;font-size:12px;text-transform:uppercase}
+  .brand .sub{color:var(--tx3);font-size:12px}
+  .topright{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .vintage{font-family:var(--mono);font-size:11px;color:var(--tx3);text-align:right;line-height:1.5}
+  .vintage b{color:var(--tx2);font-weight:500}
+  .seg{display:inline-flex;background:var(--panel2);border:1px solid var(--border);border-radius:var(--r);padding:3px}
+  .seg button{background:none;border:none;color:var(--tx2);font-family:var(--mono);font-size:12px;font-weight:600;padding:5px 12px;border-radius:6px;cursor:pointer}
+  .seg button.on{background:var(--raise);color:var(--tx)}
+
+  .regime{display:flex;gap:1px;background:var(--border);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:16px;flex-wrap:wrap}
+  .regime .cell{flex:1;min-width:150px;background:var(--panel);padding:11px 14px}
+  .regime .lbl{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--tx3);margin-bottom:3px}
+  .regime .val{font-size:13.5px;font-weight:600}
+
+  .tabs{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:20px;overflow-x:auto}
+  .tabs button{background:none;border:none;border-bottom:2px solid transparent;color:var(--tx2);font-family:var(--sans);font-size:14px;font-weight:600;padding:11px 16px;cursor:pointer;white-space:nowrap;margin-bottom:-1px}
+  .tabs button.on{color:var(--tx);border-bottom-color:var(--amber)}
+  .tabs button:hover{color:var(--tx)}
+
+  .panel{display:none}
+  .panel.on{display:block;animation:fade .25s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+  h2.sec{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--tx2);margin:26px 0 12px;display:flex;align-items:center;gap:10px}
+  h2.sec:first-child{margin-top:4px}
+  h2.sec .tag{font-family:var(--mono);font-size:10px;font-weight:500;color:var(--tx3);text-transform:none;letter-spacing:0;background:var(--panel2);border:1px solid var(--border);padding:2px 7px;border-radius:5px}
+
+  /* KPI cards */
+  .grid{display:grid;gap:12px}
+  .g2{grid-template-columns:repeat(2,1fr)} .g3{grid-template-columns:repeat(3,1fr)} .g4{grid-template-columns:repeat(4,1fr)}
+  .kpi{background:var(--panel);border:1px solid var(--border);border-radius:var(--r-lg);padding:15px 16px}
+  .kpi .k-lbl{font-size:11.5px;color:var(--tx2);margin-bottom:7px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .kpi .k-lbl .en{color:var(--tx3);font-family:var(--mono);font-size:10px}
+  .kpi .k-val{font-family:var(--mono);font-size:28px;font-weight:600;line-height:1;letter-spacing:-.01em}
+  .kpi .k-val .u{font-size:14px;color:var(--tx2);font-weight:500;margin-left:2px}
+  .kpi .k-row{display:flex;gap:14px;margin-top:10px;flex-wrap:wrap}
+  .kpi .k-item{font-size:11px;color:var(--tx3)}
+  .kpi .k-item b{font-family:var(--mono);font-weight:600;font-size:12px;display:block;margin-top:1px}
+  .pill{display:inline-block;font-family:var(--mono);font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px}
+  .pill.up{background:var(--up-d);color:var(--up)} .pill.dn{background:var(--down-d);color:var(--down)}
+  .pill.am{background:var(--amber-d);color:var(--amber)} .pill.nt{background:var(--panel2);color:var(--tx2)} .pill.in{background:var(--info-d);color:var(--info)}
+  .pos{color:var(--up)} .neg{color:var(--down)} .amb{color:var(--amber)} .muted{color:var(--tx3)}
+
+  /* tables */
+  table{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden}
+  th,td{padding:10px 14px;text-align:right;font-size:13px;border-bottom:1px solid var(--border)}
+  th{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--tx3);font-weight:600;background:var(--panel2)}
+  th:first-child,td:first-child{text-align:left}
+  td.name{color:var(--tx)} td .nt2{color:var(--tx3);font-size:11px;display:block}
+  td.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+  tr:last-child td{border-bottom:none}
+  tbody tr:hover{background:var(--panel2)}
+
+  .chartbox{background:var(--panel);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px}
+  .chartbox .ch-title{font-size:12.5px;font-weight:600;color:var(--tx2);margin-bottom:4px}
+  .chartbox .ch-note{font-size:10.5px;color:var(--tx3);margin-bottom:12px}
+  .cwrap{position:relative;width:100%}
+
+  .note{background:var(--panel2);border:1px solid var(--border);border-left:3px solid var(--amber);border-radius:0 var(--r) var(--r) 0;padding:12px 14px;font-size:12.5px;color:var(--tx2);line-height:1.6}
+  .note b{color:var(--tx)}
+  .synth{background:var(--panel);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px 20px;font-size:13.5px;line-height:1.7;color:var(--tx2)}
+  .synth b{color:var(--tx)}
+  .synth .hdr{font-size:13px;font-weight:600;color:var(--amber);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;font-family:var(--mono)}
+
+  .cal{display:grid;gap:10px;grid-template-columns:repeat(2,1fr)}
+  .cal .ev{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;display:flex;justify-content:space-between;align-items:center}
+  .cal .ev .nm{font-size:13px;font-weight:600} .cal .ev .nm span{display:block;font-size:11px;color:var(--tx3);font-weight:400}
+  .cal .ev .dt{font-family:var(--mono);font-size:12.5px;color:var(--amber);text-align:right}
+  .cal .ev .dt span{display:block;font-size:10px;color:var(--tx3)}
+
+  footer{margin-top:36px;padding-top:16px;border-top:1px solid var(--border);font-size:11px;color:var(--tx3);line-height:1.7}
+  footer code{font-family:var(--mono);color:var(--tx2);background:var(--panel2);padding:1px 5px;border-radius:4px}
+
+  @media (max-width:820px){.g4{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:1fr}.cal{grid-template-columns:1fr}.regime .cell{min-width:48%}}
+  @media (max-width:520px){.g2,.g4{grid-template-columns:1fr}.kpi .k-val{font-size:24px}}
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <div class="gate-card">
+    <div class="mark">Macro Monitor</div>
+    <h1 id="g-title">Restricted research terminal</h1>
+    <p id="g-sub">Enter access key to continue.</p>
+    <input id="g-input" type="password" autocomplete="off" inputmode="numeric" placeholder="••••••••" />
+    <button id="g-btn">Unlock</button>
+    <div class="gate-err" id="g-err"></div>
+  </div>
+</div>
+
+<div id="app">
+  <div class="topbar">
+    <div class="brand">
+      <span class="mark">Macro Monitor</span>
+      <span class="sub" id="b-sub">CPI · Jobs · PCE</span>
+    </div>
+    <div class="topright">
+      <div class="vintage" id="vintage"></div>
+      <div class="seg">
+        <button data-lang="en" class="on" onclick="setLang('en')">EN</button>
+        <button data-lang="tc" onclick="setLang('tc')">繁</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="regime" id="regime"></div>
+
+  <div class="tabs" id="tabs"></div>
+
+  <section class="panel" id="p-overview"></section>
+  <section class="panel" id="p-liq"></section>
+  <section class="panel" id="p-cpi"></section>
+  <section class="panel" id="p-jobs"></section>
+  <section class="panel" id="p-pce"></section>
+
+  <footer id="footer"></footer>
+</div>
+
+<script>
+/* ============================================================
+   ACCESS GATE — SHA-256 via crypto.subtle only; no plaintext.
+   ============================================================ */
+const PW_HASH = "bebc79734038e684e2d9bd00f8a0bcebb96fbffbdb699ffd076732806fe1cde0";
+async function sha256(s){
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s));
+  return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,"0")).join("");
+}
+async function tryUnlock(){
+  const v = document.getElementById("g-input").value.trim();
+  const err = document.getElementById("g-err");
+  try{
+    if((await sha256(v)) === PW_HASH){
+      sessionStorage.setItem("mm_ok","1");
+      reveal();
+    }else{ err.textContent = LANG==="tc" ? "存取金鑰錯誤" : "Incorrect access key."; }
+  }catch(e){ err.textContent = "Secure context required (use the https:// URL)."; }
+}
+function reveal(){
+  document.getElementById("gate").style.display="none";
+  document.getElementById("app").style.display="block";
+  renderAll();
+}
+document.getElementById("g-btn").addEventListener("click", tryUnlock);
+document.getElementById("g-input").addEventListener("keydown", e=>{ if(e.key==="Enter") tryUnlock(); });
+
+/* Auto-generated data block. scripts/fetch-fred.mjs replaces everything between
+   the two sentinels below on each run. Do not hand-edit between the sentinels.
+   Initial snapshot: CPI Apr-2026, Jobs May-2026, PCE Apr-2026. */
+//__MM_DATA_START__
+const DATA = {
+  "meta": {
+    "asof": {
+      "cpi": "Apr 2026",
+      "jobs": "May 2026",
+      "pce": "Apr 2026"
+    },
+    "updated": "2026-06-09",
+    "note": "Auto-generated from FRED",
+    "next": {
+      "cpi": {
+        "d": "Jun 11 2026",
+        "l": "May CPI"
+      },
+      "jobs": {
+        "d": "Jul 02 2026",
+        "l": "Jun jobs"
+      },
+      "pce": {
+        "d": "Jun 25 2026",
+        "l": "May PCE"
+      },
+      "fomc": {
+        "d": "Jun 17 2026",
+        "l": "FOMC decision"
+      }
+    }
+  },
+  "regime": {
+    "inflation": "Re-accelerating (energy/war)",
+    "labor": "Solid but narrow",
+    "fed": "On hold · restrictive",
+    "bias": "Hike-risk skew · no 2026 cuts priced"
+  },
+  "nl": {
+    "tn": 5.83,
+    "value": 5833.7,
+    "zone": {
+      "k": "am",
+      "en": "Uncomfortable",
+      "tc": "偏緊"
+    },
+    "walcl": 6.71,
+    "tga": 0.88,
+    "rrp": 1.8,
+    "sofrIorb": -2,
+    "spx": 7406,
+    "series": {
+      "labels": [
+        "Jun '16",
+        "Jun '16",
+        "Jun '16",
+        "Jun '16",
+        "Jul '16",
+        "Jul '16",
+        "Jul '16",
+        "Jul '16",
+        "Aug '16",
+        "Aug '16",
+        "Aug '16",
+        "Aug '16",
+        "Aug '16",
+        "Sep '16",
+        "Sep '16",
+        "Sep '16",
+        "Sep '16",
+        "Oct '16",
+        "Oct '16",
+        "Oct '16",
+        "Oct '16",
+        "Nov '16",
+        "Nov '16",
+        "Nov '16",
+        "Nov '16",
+        "Nov '16",
+        "Dec '16",
+        "Dec '16",
+        "Dec '16",
+        "Dec '16",
+        "Jan '17",
+        "Jan '17",
+        "Jan '17",
+        "Jan '17",
+        "Feb '17",
+        "Feb '17",
+        "Feb '17",
+        "Feb '17",
+        "Mar '17",
+        "Mar '17",
+        "Mar '17",
+        "Mar '17",
+        "Mar '17",
+        "Apr '17",
+        "Apr '17",
+        "Apr '17",
+        "Apr '17",
+        "May '17",
+        "May '17",
+        "May '17",
+        "May '17",
+        "May '17",
+        "Jun '17",
+        "Jun '17",
+        "Jun '17",
+        "Jun '17",
+        "Jul '17",
+        "Jul '17",
+        "Jul '17",
+        "Jul '17",
+        "Aug '17",
+        "Aug '17",
+        "Aug '17",
+        "Aug '17",
+        "Aug '17",
+        "Sep '17",
+        "Sep '17",
+        "Sep '17",
+        "Sep '17",
+        "Oct '17",
+        "Oct '17",
+        "Oct '17",
+        "Oct '17",
+        "Nov '17",
+        "Nov '17",
+        "Nov '17",
+        "Nov '17",
+        "Nov '17",
+        "Dec '17",
+        "Dec '17",
+        "Dec '17",
+        "Dec '17",
+        "Jan '18",
+        "Jan '18",
+        "Jan '18",
+        "Jan '18",
+        "Jan '18",
+        "Feb '18",
+        "Feb '18",
+        "Feb '18",
+        "Feb '18",
+        "Mar '18",
+        "Mar '18",
+        "Mar '18",
+        "Mar '18",
+        "Apr '18",
+        "Apr '18",
+        "Apr '18",
+        "Apr '18",
+        "May '18",
+        "May '18",
+        "May '18",
+        "May '18",
+        "May '18",
+        "Jun '18",
+        "Jun '18",
+        "Jun '18",
+        "Jun '18",
+        "Jul '18",
+        "Jul '18",
+        "Jul '18",
+        "Jul '18",
+        "Aug '18",
+        "Aug '18",
+        "Aug '18",
+        "Aug '18",
+        "Aug '18",
+        "Sep '18",
+        "Sep '18",
+        "Sep '18",
+        "Sep '18",
+        "Oct '18",
+        "Oct '18",
+        "Oct '18",
+        "Oct '18",
+        "Oct '18",
+        "Nov '18",
+        "Nov '18",
+        "Nov '18",
+        "Nov '18",
+        "Dec '18",
+        "Dec '18",
+        "Dec '18",
+        "Dec '18",
+        "Jan '19",
+        "Jan '19",
+        "Jan '19",
+        "Jan '19",
+        "Jan '19",
+        "Feb '19",
+        "Feb '19",
+        "Feb '19",
+        "Feb '19",
+        "Mar '19",
+        "Mar '19",
+        "Mar '19",
+        "Mar '19",
+        "Apr '19",
+        "Apr '19",
+        "Apr '19",
+        "Apr '19",
+        "May '19",
+        "May '19",
+        "May '19",
+        "May '19",
+        "May '19",
+        "Jun '19",
+        "Jun '19",
+        "Jun '19",
+        "Jun '19",
+        "Jul '19",
+        "Jul '19",
+        "Jul '19",
+        "Jul '19",
+        "Jul '19",
+        "Aug '19",
+        "Aug '19",
+        "Aug '19",
+        "Aug '19",
+        "Sep '19",
+        "Sep '19",
+        "Sep '19",
+        "Sep '19",
+        "Oct '19",
+        "Oct '19",
+        "Oct '19",
+        "Oct '19",
+        "Oct '19",
+        "Nov '19",
+        "Nov '19",
+        "Nov '19",
+        "Nov '19",
+        "Dec '19",
+        "Dec '19",
+        "Dec '19",
+        "Dec '19",
+        "Jan '20",
+        "Jan '20",
+        "Jan '20",
+        "Jan '20",
+        "Jan '20",
+        "Feb '20",
+        "Feb '20",
+        "Feb '20",
+        "Feb '20",
+        "Mar '20",
+        "Mar '20",
+        "Mar '20",
+        "Mar '20",
+        "Apr '20",
+        "Apr '20",
+        "Apr '20",
+        "Apr '20",
+        "Apr '20",
+        "May '20",
+        "May '20",
+        "May '20",
+        "May '20",
+        "Jun '20",
+        "Jun '20",
+        "Jun '20",
+        "Jun '20",
+        "Jul '20",
+        "Jul '20",
+        "Jul '20",
+        "Jul '20",
+        "Jul '20",
+        "Aug '20",
+        "Aug '20",
+        "Aug '20",
+        "Aug '20",
+        "Sep '20",
+        "Sep '20",
+        "Sep '20",
+        "Sep '20",
+        "Sep '20",
+        "Oct '20",
+        "Oct '20",
+        "Oct '20",
+        "Oct '20",
+        "Nov '20",
+        "Nov '20",
+        "Nov '20",
+        "Nov '20",
+        "Dec '20",
+        "Dec '20",
+        "Dec '20",
+        "Dec '20",
+        "Dec '20",
+        "Jan '21",
+        "Jan '21",
+        "Jan '21",
+        "Jan '21",
+        "Feb '21",
+        "Feb '21",
+        "Feb '21",
+        "Feb '21",
+        "Mar '21",
+        "Mar '21",
+        "Mar '21",
+        "Mar '21",
+        "Mar '21",
+        "Apr '21",
+        "Apr '21",
+        "Apr '21",
+        "Apr '21",
+        "May '21",
+        "May '21",
+        "May '21",
+        "May '21",
+        "Jun '21",
+        "Jun '21",
+        "Jun '21",
+        "Jun '21",
+        "Jun '21",
+        "Jul '21",
+        "Jul '21",
+        "Jul '21",
+        "Jul '21",
+        "Aug '21",
+        "Aug '21",
+        "Aug '21",
+        "Aug '21",
+        "Sep '21",
+        "Sep '21",
+        "Sep '21",
+        "Sep '21",
+        "Sep '21",
+        "Oct '21",
+        "Oct '21",
+        "Oct '21",
+        "Oct '21",
+        "Nov '21",
+        "Nov '21",
+        "Nov '21",
+        "Nov '21",
+        "Dec '21",
+        "Dec '21",
+        "Dec '21",
+        "Dec '21",
+        "Dec '21",
+        "Jan '22",
+        "Jan '22",
+        "Jan '22",
+        "Jan '22",
+        "Feb '22",
+        "Feb '22",
+        "Feb '22",
+        "Feb '22",
+        "Mar '22",
+        "Mar '22",
+        "Mar '22",
+        "Mar '22",
+        "Mar '22",
+        "Apr '22",
+        "Apr '22",
+        "Apr '22",
+        "Apr '22",
+        "May '22",
+        "May '22",
+        "May '22",
+        "May '22",
+        "Jun '22",
+        "Jun '22",
+        "Jun '22",
+        "Jun '22",
+        "Jun '22",
+        "Jul '22",
+        "Jul '22",
+        "Jul '22",
+        "Jul '22",
+        "Aug '22",
+        "Aug '22",
+        "Aug '22",
+        "Aug '22",
+        "Aug '22",
+        "Sep '22",
+        "Sep '22",
+        "Sep '22",
+        "Sep '22",
+        "Oct '22",
+        "Oct '22",
+        "Oct '22",
+        "Oct '22",
+        "Nov '22",
+        "Nov '22",
+        "Nov '22",
+        "Nov '22",
+        "Nov '22",
+        "Dec '22",
+        "Dec '22",
+        "Dec '22",
+        "Dec '22",
+        "Jan '23",
+        "Jan '23",
+        "Jan '23",
+        "Jan '23",
+        "Feb '23",
+        "Feb '23",
+        "Feb '23",
+        "Feb '23",
+        "Mar '23",
+        "Mar '23",
+        "Mar '23",
+        "Mar '23",
+        "Mar '23",
+        "Apr '23",
+        "Apr '23",
+        "Apr '23",
+        "Apr '23",
+        "May '23",
+        "May '23",
+        "May '23",
+        "May '23",
+        "May '23",
+        "Jun '23",
+        "Jun '23",
+        "Jun '23",
+        "Jun '23",
+        "Jul '23",
+        "Jul '23",
+        "Jul '23",
+        "Jul '23",
+        "Aug '23",
+        "Aug '23",
+        "Aug '23",
+        "Aug '23",
+        "Aug '23",
+        "Sep '23",
+        "Sep '23",
+        "Sep '23",
+        "Sep '23",
+        "Oct '23",
+        "Oct '23",
+        "Oct '23",
+        "Oct '23",
+        "Nov '23",
+        "Nov '23",
+        "Nov '23",
+        "Nov '23",
+        "Nov '23",
+        "Dec '23",
+        "Dec '23",
+        "Dec '23",
+        "Dec '23",
+        "Jan '24",
+        "Jan '24",
+        "Jan '24",
+        "Jan '24",
+        "Jan '24",
+        "Feb '24",
+        "Feb '24",
+        "Feb '24",
+        "Feb '24",
+        "Mar '24",
+        "Mar '24",
+        "Mar '24",
+        "Mar '24",
+        "Apr '24",
+        "Apr '24",
+        "Apr '24",
+        "Apr '24",
+        "May '24",
+        "May '24",
+        "May '24",
+        "May '24",
+        "May '24",
+        "Jun '24",
+        "Jun '24",
+        "Jun '24",
+        "Jun '24",
+        "Jul '24",
+        "Jul '24",
+        "Jul '24",
+        "Jul '24",
+        "Jul '24",
+        "Aug '24",
+        "Aug '24",
+        "Aug '24",
+        "Aug '24",
+        "Sep '24",
+        "Sep '24",
+        "Sep '24",
+        "Sep '24",
+        "Oct '24",
+        "Oct '24",
+        "Oct '24",
+        "Oct '24",
+        "Oct '24",
+        "Nov '24",
+        "Nov '24",
+        "Nov '24",
+        "Nov '24",
+        "Dec '24",
+        "Dec '24",
+        "Dec '24",
+        "Dec '24",
+        "Jan '25",
+        "Jan '25",
+        "Jan '25",
+        "Jan '25",
+        "Jan '25",
+        "Feb '25",
+        "Feb '25",
+        "Feb '25",
+        "Feb '25",
+        "Mar '25",
+        "Mar '25",
+        "Mar '25",
+        "Mar '25",
+        "Apr '25",
+        "Apr '25",
+        "Apr '25",
+        "Apr '25",
+        "Apr '25",
+        "May '25",
+        "May '25",
+        "May '25",
+        "May '25",
+        "Jun '25",
+        "Jun '25",
+        "Jun '25",
+        "Jun '25",
+        "Jul '25",
+        "Jul '25",
+        "Jul '25",
+        "Jul '25",
+        "Jul '25",
+        "Aug '25",
+        "Aug '25",
+        "Aug '25",
+        "Aug '25",
+        "Sep '25",
+        "Sep '25",
+        "Sep '25",
+        "Sep '25",
+        "Oct '25",
+        "Oct '25",
+        "Oct '25",
+        "Oct '25",
+        "Oct '25",
+        "Nov '25",
+        "Nov '25",
+        "Nov '25",
+        "Nov '25",
+        "Dec '25",
+        "Dec '25",
+        "Dec '25",
+        "Dec '25",
+        "Dec '25",
+        "Jan '26",
+        "Jan '26",
+        "Jan '26",
+        "Jan '26",
+        "Feb '26",
+        "Feb '26",
+        "Feb '26",
+        "Feb '26",
+        "Mar '26",
+        "Mar '26",
+        "Mar '26",
+        "Mar '26",
+        "Apr '26",
+        "Apr '26",
+        "Apr '26",
+        "Apr '26",
+        "Apr '26",
+        "May '26",
+        "May '26",
+        "May '26",
+        "May '26",
+        "Jun '26"
+      ],
+      "nl": [
+        4.19,
+        4.21,
+        4.07,
+        3.99,
+        4.08,
+        4.11,
+        4.07,
+        4.07,
+        4.1,
+        4.13,
+        4.12,
+        4.12,
+        4.01,
+        4.14,
+        4.17,
+        3.96,
+        3.83,
+        3.81,
+        3.91,
+        3.88,
+        3.88,
+        3.86,
+        3.95,
+        3.94,
+        3.95,
+        3.83,
+        3.92,
+        3.98,
+        3.77,
+        3.75,
+        3.8,
+        3.92,
+        3.96,
+        3.95,
+        3.95,
+        4.03,
+        4.04,
+        4.03,
+        4.13,
+        4.16,
+        4.2,
+        4.16,
+        4.14,
+        4.21,
+        4.26,
+        4.2,
+        4.11,
+        4.04,
+        4.09,
+        4.11,
+        4.12,
+        4.03,
+        4.14,
+        4.16,
+        4.06,
+        3.99,
+        4.05,
+        4.12,
+        4.15,
+        4.17,
+        4.17,
+        4.22,
+        4.24,
+        4.21,
+        4.25,
+        4.27,
+        4.28,
+        4.16,
+        4.07,
+        4.12,
+        4.16,
+        4.17,
+        4.15,
+        4.18,
+        4.21,
+        4.24,
+        4.24,
+        4.2,
+        4.23,
+        4.23,
+        4.16,
+        4.11,
+        4.1,
+        4.18,
+        4.19,
+        4.14,
+        4.08,
+        4.17,
+        4.2,
+        4.15,
+        4.15,
+        4.19,
+        4.15,
+        4.06,
+        4.06,
+        4.08,
+        4.09,
+        4.1,
+        4.01,
+        3.95,
+        4,
+        4,
+        4.01,
+        4,
+        4.01,
+        4.04,
+        3.96,
+        3.91,
+        3.95,
+        3.96,
+        3.96,
+        3.93,
+        3.9,
+        3.93,
+        3.89,
+        3.88,
+        3.88,
+        3.88,
+        3.91,
+        3.86,
+        3.82,
+        3.8,
+        3.85,
+        3.84,
+        3.8,
+        3.76,
+        3.82,
+        3.8,
+        3.76,
+        3.76,
+        3.75,
+        3.75,
+        3.73,
+        3.7,
+        3.66,
+        3.7,
+        3.7,
+        3.65,
+        3.64,
+        3.67,
+        3.67,
+        3.65,
+        3.66,
+        3.75,
+        3.73,
+        3.66,
+        3.64,
+        3.63,
+        3.67,
+        3.65,
+        3.54,
+        3.49,
+        3.54,
+        3.54,
+        3.57,
+        3.6,
+        3.62,
+        3.66,
+        3.62,
+        3.57,
+        3.56,
+        3.6,
+        3.61,
+        3.6,
+        3.61,
+        3.65,
+        3.65,
+        3.62,
+        3.61,
+        3.61,
+        3.58,
+        3.58,
+        3.54,
+        3.61,
+        3.63,
+        3.64,
+        3.57,
+        3.63,
+        3.66,
+        3.66,
+        3.64,
+        3.69,
+        3.72,
+        3.77,
+        3.79,
+        3.79,
+        3.73,
+        3.78,
+        3.82,
+        3.73,
+        3.72,
+        3.75,
+        3.77,
+        3.74,
+        3.72,
+        3.86,
+        3.93,
+        4.31,
+        4.77,
+        5.17,
+        5.33,
+        5.47,
+        5.66,
+        5.66,
+        5.59,
+        5.74,
+        5.83,
+        5.78,
+        5.73,
+        5.66,
+        5.53,
+        5.46,
+        5.35,
+        5.27,
+        5.3,
+        5.16,
+        5.13,
+        5.2,
+        5.29,
+        5.37,
+        5.37,
+        5.38,
+        5.4,
+        5.45,
+        5.41,
+        5.38,
+        5.38,
+        5.47,
+        5.45,
+        5.47,
+        5.54,
+        5.57,
+        5.69,
+        5.7,
+        5.69,
+        5.71,
+        5.83,
+        5.8,
+        5.77,
+        5.67,
+        5.74,
+        5.79,
+        5.77,
+        5.79,
+        5.83,
+        5.99,
+        6.06,
+        6.13,
+        6.22,
+        6.42,
+        6.64,
+        6.53,
+        6.66,
+        6.82,
+        6.72,
+        6.65,
+        6.69,
+        6.72,
+        6.76,
+        6.64,
+        6.71,
+        6.72,
+        6.89,
+        6.55,
+        6.34,
+        6.56,
+        6.64,
+        6.68,
+        6.68,
+        6.81,
+        6.82,
+        6.89,
+        6.88,
+        6.99,
+        6.99,
+        7.14,
+        6.9,
+        6.83,
+        6.88,
+        7.04,
+        6.99,
+        6.91,
+        6.95,
+        6.96,
+        6.94,
+        7.06,
+        7.07,
+        7.07,
+        7.03,
+        7.01,
+        6.9,
+        6.88,
+        6.79,
+        6.72,
+        6.63,
+        6.57,
+        6.54,
+        6.57,
+        6.49,
+        6.7,
+        6.72,
+        6.77,
+        6.54,
+        6.58,
+        6.63,
+        6.6,
+        6.38,
+        6.19,
+        6.18,
+        6.12,
+        6.09,
+        6.1,
+        6.16,
+        6.05,
+        6.11,
+        5.92,
+        5.93,
+        6.02,
+        6.09,
+        6.05,
+        6.1,
+        6.1,
+        6.14,
+        6.1,
+        6.08,
+        5.96,
+        6.03,
+        6.01,
+        5.81,
+        5.74,
+        5.89,
+        5.9,
+        5.89,
+        5.9,
+        5.85,
+        5.91,
+        6.02,
+        6.07,
+        5.96,
+        6,
+        6.04,
+        5.9,
+        5.83,
+        5.85,
+        5.94,
+        6.02,
+        5.95,
+        5.84,
+        5.88,
+        5.88,
+        5.79,
+        5.82,
+        5.82,
+        6.35,
+        6.19,
+        6.26,
+        6.22,
+        6.2,
+        6.13,
+        5.99,
+        5.98,
+        6.07,
+        6.13,
+        6.12,
+        6.08,
+        6.18,
+        6.18,
+        6.05,
+        6.01,
+        6.02,
+        5.96,
+        6.01,
+        5.95,
+        5.92,
+        5.97,
+        5.91,
+        5.91,
+        5.95,
+        6.02,
+        6.03,
+        5.9,
+        5.88,
+        5.95,
+        6,
+        6.02,
+        5.97,
+        5.97,
+        6.06,
+        6.13,
+        6.17,
+        6.14,
+        6.21,
+        6.26,
+        6.21,
+        6.16,
+        6.2,
+        6.26,
+        6.33,
+        6.24,
+        6.17,
+        6.28,
+        6.22,
+        6.22,
+        6.21,
+        6.31,
+        6.25,
+        6.21,
+        6.16,
+        6.23,
+        6.29,
+        6.17,
+        6.02,
+        6.01,
+        6.01,
+        6.07,
+        6.08,
+        6.12,
+        6.17,
+        6.14,
+        6.15,
+        5.98,
+        6.03,
+        6.07,
+        6.06,
+        6.03,
+        5.98,
+        6.12,
+        6.06,
+        6.08,
+        5.99,
+        6.04,
+        6.08,
+        6.03,
+        5.86,
+        5.87,
+        5.9,
+        5.98,
+        5.93,
+        5.95,
+        5.97,
+        5.9,
+        5.95,
+        5.96,
+        5.94,
+        5.94,
+        5.99,
+        5.94,
+        5.66,
+        6.02,
+        6.07,
+        6.03,
+        5.91,
+        5.93,
+        5.92,
+        5.92,
+        5.96,
+        6.07,
+        6.12,
+        6.13,
+        6.14,
+        6.18,
+        6.25,
+        6.25,
+        5.95,
+        5.86,
+        5.97,
+        5.97,
+        6.02,
+        6.03,
+        6.13,
+        6.14,
+        6.14,
+        6.09,
+        6.06,
+        6.11,
+        6.17,
+        6.14,
+        6.12,
+        6.13,
+        6.08,
+        6.06,
+        5.98,
+        5.99,
+        5.9,
+        5.84,
+        5.77,
+        5.77,
+        5.78,
+        5.78,
+        5.68,
+        5.61,
+        5.62,
+        5.62,
+        5.61,
+        5.65,
+        5.6,
+        5.68,
+        5.71,
+        5.74,
+        5.7,
+        5.77,
+        5.8,
+        5.71,
+        5.66,
+        5.69,
+        5.71,
+        5.7,
+        5.73,
+        5.8,
+        5.81,
+        5.8,
+        5.78,
+        5.83,
+        5.95,
+        5.95,
+        5.7,
+        5.72,
+        5.83,
+        5.89,
+        5.91,
+        5.87,
+        5.83
+      ],
+      "spx": [
+        null,
+        2072,
+        2085,
+        2071,
+        2100,
+        2152,
+        2173,
+        2167,
+        2164,
+        2175,
+        2182,
+        2175,
+        2171,
+        2186,
+        2126,
+        2163,
+        2171,
+        2160,
+        2139,
+        2144,
+        2139,
+        2098,
+        2163,
+        2177,
+        2205,
+        2199,
+        2241,
+        2253,
+        2265,
+        2250,
+        2271,
+        2275,
+        2272,
+        2298,
+        2280,
+        2295,
+        2349,
+        2363,
+        2396,
+        2363,
+        2385,
+        2348,
+        2361,
+        2353,
+        2345,
+        2338,
+        2387,
+        2388,
+        2400,
+        2357,
+        2404,
+        2412,
+        2433,
+        2438,
+        2436,
+        2441,
+        2433,
+        2443,
+        2474,
+        2478,
+        2478,
+        2474,
+        2468,
+        2444,
+        2458,
+        2466,
+        2498,
+        2508,
+        2507,
+        2538,
+        2555,
+        2561,
+        2557,
+        2579,
+        2594,
+        2565,
+        2597,
+        2626,
+        2629,
+        2663,
+        2679,
+        2683,
+        2713,
+        2748,
+        2803,
+        2838,
+        2824,
+        2682,
+        2699,
+        2701,
+        2714,
+        2727,
+        2749,
+        2712,
+        2605,
+        2645,
+        2642,
+        2709,
+        2639,
+        2636,
+        2698,
+        2722,
+        2733,
+        2724,
+        2772,
+        2776,
+        2767,
+        2700,
+        2713,
+        2774,
+        2816,
+        2846,
+        2813,
+        2858,
+        2818,
+        2862,
+        2914,
+        2889,
+        2889,
+        2908,
+        2906,
+        2926,
+        2786,
+        2809,
+        2656,
+        2712,
+        2814,
+        2702,
+        2650,
+        2744,
+        2700,
+        2651,
+        2507,
+        2468,
+        2510,
+        2585,
+        2616,
+        2639,
+        2681,
+        2732,
+        2753,
+        2785,
+        2792,
+        2771,
+        2811,
+        2824,
+        2805,
+        2873,
+        2888,
+        2900,
+        2927,
+        2924,
+        2879,
+        2851,
+        2856,
+        2783,
+        2826,
+        2880,
+        2926,
+        2914,
+        2996,
+        2993,
+        2984,
+        3020,
+        2980,
+        2884,
+        2841,
+        2924,
+        2888,
+        2938,
+        3001,
+        3007,
+        2985,
+        2888,
+        2919,
+        2990,
+        3005,
+        3047,
+        3077,
+        3094,
+        3108,
+        3154,
+        3113,
+        3142,
+        3191,
+        3223,
+        3231,
+        3253,
+        3289,
+        3322,
+        3273,
+        3335,
+        3379,
+        3386,
+        3116,
+        3130,
+        2741,
+        2398,
+        2476,
+        2471,
+        2750,
+        2783,
+        2799,
+        2940,
+        2848,
+        2820,
+        2972,
+        3036,
+        3123,
+        3190,
+        3113,
+        3050,
+        3116,
+        3170,
+        3227,
+        3276,
+        3258,
+        3328,
+        3380,
+        3375,
+        3479,
+        3581,
+        3399,
+        3385,
+        3237,
+        3363,
+        3419,
+        3489,
+        3436,
+        3271,
+        3443,
+        3573,
+        3568,
+        3630,
+        3669,
+        3673,
+        3701,
+        3690,
+        3732,
+        3748,
+        3810,
+        3852,
+        3751,
+        3830,
+        3910,
+        3931,
+        3925,
+        3820,
+        3899,
+        3974,
+        3889,
+        3973,
+        4080,
+        4125,
+        4173,
+        4183,
+        4168,
+        4063,
+        4116,
+        4196,
+        4208,
+        4220,
+        4224,
+        4242,
+        4298,
+        4358,
+        4374,
+        4359,
+        4401,
+        4403,
+        4448,
+        4400,
+        4496,
+        4524,
+        4514,
+        4481,
+        4396,
+        4359,
+        4364,
+        4364,
+        4536,
+        4552,
+        4661,
+        4647,
+        4689,
+        4701,
+        4513,
+        4701,
+        4710,
+        4697,
+        4793,
+        4701,
+        4726,
+        4533,
+        4350,
+        4589,
+        4587,
+        4475,
+        4226,
+        4387,
+        4278,
+        4358,
+        4456,
+        4602,
+        4481,
+        4447,
+        4459,
+        4184,
+        4300,
+        3935,
+        3924,
+        3979,
+        4101,
+        4116,
+        3790,
+        3760,
+        3819,
+        3845,
+        3802,
+        3960,
+        4024,
+        4155,
+        4210,
+        4274,
+        4141,
+        3955,
+        3980,
+        3946,
+        3790,
+        3719,
+        3783,
+        3577,
+        3695,
+        3831,
+        3760,
+        3749,
+        3959,
+        4027,
+        4080,
+        3934,
+        3995,
+        3878,
+        3783,
+        3853,
+        3970,
+        3929,
+        4016,
+        4119,
+        4118,
+        4148,
+        3991,
+        3951,
+        3992,
+        3892,
+        3937,
+        4028,
+        4090,
+        4092,
+        4155,
+        4056,
+        4091,
+        4138,
+        4159,
+        4115,
+        4180,
+        4268,
+        4373,
+        4366,
+        4377,
+        4447,
+        4472,
+        4566,
+        4567,
+        4513,
+        4468,
+        4404,
+        4436,
+        4515,
+        4465,
+        4467,
+        4402,
+        4275,
+        4264,
+        4377,
+        4315,
+        4187,
+        4238,
+        4383,
+        4503,
+        4557,
+        4551,
+        4549,
+        4707,
+        4698,
+        4782,
+        4705,
+        4783,
+        4739,
+        4869,
+        4846,
+        4995,
+        5001,
+        4982,
+        5070,
+        5105,
+        5165,
+        5225,
+        5248,
+        5211,
+        5161,
+        5022,
+        5072,
+        5018,
+        5188,
+        5308,
+        5307,
+        5267,
+        5354,
+        5421,
+        5487,
+        5478,
+        5537,
+        5634,
+        5588,
+        5427,
+        5522,
+        5200,
+        5455,
+        5621,
+        5592,
+        5520,
+        5554,
+        5618,
+        5722,
+        5710,
+        5792,
+        5842,
+        5797,
+        5814,
+        5929,
+        5985,
+        5917,
+        5999,
+        6086,
+        6084,
+        5872,
+        6040,
+        5882,
+        5918,
+        5950,
+        6086,
+        6039,
+        6061,
+        6052,
+        6144,
+        5956,
+        5843,
+        5599,
+        5675,
+        5712,
+        5671,
+        5457,
+        5276,
+        5376,
+        5569,
+        5631,
+        5893,
+        5845,
+        5889,
+        5971,
+        6022,
+        5981,
+        6092,
+        6227,
+        6263,
+        6264,
+        6359,
+        6363,
+        6345,
+        6467,
+        6396,
+        6481,
+        6448,
+        6532,
+        6600,
+        6638,
+        6711,
+        6754,
+        6671,
+        6699,
+        6891,
+        6796,
+        6851,
+        6642,
+        6813,
+        6850,
+        6887,
+        6721,
+        6932,
+        6846,
+        6921,
+        6927,
+        6876,
+        6978,
+        6883,
+        6941,
+        6881,
+        6946,
+        6870,
+        6776,
+        6625,
+        6592,
+        6575,
+        6783,
+        7023,
+        7138,
+        7136,
+        7365,
+        7444,
+        7433,
+        7520,
+        7554
+      ]
+    }
+  },
+  "cpi": {
+    "headline": {
+      "yoy": 3.8,
+      "mom": 0.6,
+      "prevYoY": 3.3,
+      "consYoY": 3.7,
+      "consMoM": 0.6,
+      "ann3m": 7.3,
+      "ann6m": 5.1
+    },
+    "core": {
+      "yoy": 2.8,
+      "mom": 0.4,
+      "prevYoY": 2.6,
+      "consYoY": 2.7,
+      "consMoM": 0.3,
+      "ann3m": 3.2,
+      "ann6m": 3.1
+    },
+    "supercore": {
+      "yoy": null,
+      "mom": null
+    },
+    "realWages": {
+      "yoy": -0.3,
+      "mom": -0.5
+    },
+    "components": [
+      {
+        "k": "Shelter",
+        "tc": "居住",
+        "yoy": 3.3,
+        "mom": 0.6,
+        "n": ""
+      },
+      {
+        "k": "Energy",
+        "tc": "能源",
+        "yoy": 17.9,
+        "mom": 3.8,
+        "n": ""
+      },
+      {
+        "k": "Food",
+        "tc": "食品",
+        "yoy": 3.2,
+        "mom": 0.5,
+        "n": ""
+      },
+      {
+        "k": "Core goods",
+        "tc": "核心商品",
+        "yoy": 1.1,
+        "mom": 0,
+        "n": ""
+      },
+      {
+        "k": "Core services",
+        "tc": "核心服務",
+        "yoy": 3.3,
+        "mom": 0.5,
+        "n": ""
+      }
+    ],
+    "alt": {
+      "trimmedMean": 2.8,
+      "sticky": 3,
+      "flexible": 1.2,
+      "median": 2.8
+    },
+    "series": {
+      "labels": [
+        "Oct '24",
+        "Nov '24",
+        "Dec '24",
+        "Jan '25",
+        "Feb '25",
+        "Mar '25",
+        "Apr '25",
+        "May '25",
+        "Jun '25",
+        "Jul '25",
+        "Aug '25",
+        "Sep '25",
+        "Nov '25",
+        "Dec '25",
+        "Jan '26",
+        "Feb '26",
+        "Mar '26",
+        "Apr '26"
+      ],
+      "headline": [
+        2.6,
+        2.7,
+        2.9,
+        3,
+        2.8,
+        2.4,
+        2.3,
+        2.4,
+        2.7,
+        2.7,
+        2.9,
+        3,
+        2.7,
+        2.7,
+        2.4,
+        2.4,
+        3.3,
+        3.8
+      ],
+      "core": [
+        3.3,
+        3.3,
+        3.2,
+        3.3,
+        3.1,
+        2.8,
+        2.8,
+        2.8,
+        2.9,
+        3.1,
+        3.1,
+        3,
+        2.6,
+        2.6,
+        2.5,
+        2.5,
+        2.6,
+        2.8
+      ]
+    }
+  },
+  "jobs": {
+    "nfp": {
+      "actual": 172,
+      "prior": 179,
+      "cons": 85,
+      "ann3m": 188
+    },
+    "unrate": {
+      "actual": 4.3,
+      "prior": 4.3,
+      "cons": 4.3
+    },
+    "u6": {
+      "actual": 8.1
+    },
+    "ahe": {
+      "yoy": 3.4,
+      "mom": 0.3,
+      "level": 37.53
+    },
+    "partic": {
+      "actual": 61.8
+    },
+    "epop": {
+      "actual": 59.2
+    },
+    "diffusion": {
+      "actual": null
+    },
+    "sahm": {
+      "actual": 0.1,
+      "trigger": 0.5
+    },
+    "revisions": [
+      {
+        "m": "Mar '26",
+        "i": 185,
+        "r": 214
+      },
+      {
+        "m": "Apr '26",
+        "i": 115,
+        "r": 179
+      }
+    ],
+    "jolts": {
+      "asof": "Apr 2026",
+      "openings": 7.6,
+      "hires": 5.1,
+      "quits": 3,
+      "quitsRate": 1.9,
+      "separations": 5
+    },
+    "sectors": [
+      {
+        "k": "Leisure & hospitality",
+        "tc": "休閒與酒店",
+        "v": 70
+      },
+      {
+        "k": "Local government",
+        "tc": "地方政府",
+        "v": 55
+      },
+      {
+        "k": "Health care",
+        "tc": "醫療保健",
+        "v": 35
+      },
+      {
+        "k": "Construction",
+        "tc": "營建",
+        "v": 17
+      },
+      {
+        "k": "Social assistance",
+        "tc": "社會援助",
+        "v": 12
+      },
+      {
+        "k": "Manufacturing",
+        "tc": "製造業",
+        "v": 7
+      },
+      {
+        "k": "Prof. & business svcs",
+        "tc": "專業與商業服務",
+        "v": 6
+      },
+      {
+        "k": "Mining & logging",
+        "tc": "採礦與伐木",
+        "v": 4
+      },
+      {
+        "k": "Transport & warehousing",
+        "tc": "運輸與倉儲",
+        "v": 1
+      },
+      {
+        "k": "Retail trade",
+        "tc": "零售",
+        "v": -1
+      },
+      {
+        "k": "Information",
+        "tc": "資訊",
+        "v": -2
+      },
+      {
+        "k": "Financial activities",
+        "tc": "金融活動",
+        "v": -22
+      }
+    ],
+    "worldCup": {
+      "lhTotal": 70,
+      "lhTrend": 14,
+      "exLH": 102
+    },
+    "series": {
+      "labels": [
+        "Dec '25",
+        "Jan '26",
+        "Feb '26",
+        "Mar '26",
+        "Apr '26",
+        "May '26"
+      ],
+      "nfp": [
+        -17,
+        160,
+        -156,
+        214,
+        179,
+        172
+      ]
+    }
+  },
+  "pce": {
+    "headline": {
+      "yoy": 3.8,
+      "mom": 0.4,
+      "prevYoY": 3.5,
+      "consYoY": 3.8,
+      "consMoM": 0.5,
+      "ann3m": 6,
+      "ann6m": 4.8
+    },
+    "core": {
+      "yoy": 3.3,
+      "mom": 0.2,
+      "prevYoY": 3.2,
+      "consYoY": 3.3,
+      "consMoM": 0.3,
+      "ann3m": 3.8,
+      "ann6m": 3.8
+    },
+    "supercore": {
+      "yoy": null,
+      "mom": null
+    },
+    "trimmedMean": {
+      "yoy": 2.4
+    },
+    "goods": {
+      "mom": 0.7
+    },
+    "services": {
+      "mom": 0.3
+    },
+    "income": {
+      "mom": 0
+    },
+    "dpi": {
+      "mom": -0.1
+    },
+    "spending": {
+      "mom": 0.5
+    },
+    "savingRate": {
+      "actual": 2.6
+    },
+    "gdp": {
+      "q": "Q1 '26",
+      "saar": 1.6
+    },
+    "nowcast": {
+      "coreNext": 2.9
+    },
+    "series": {
+      "labels": [
+        "Nov '24",
+        "Dec '24",
+        "Jan '25",
+        "Feb '25",
+        "Mar '25",
+        "Apr '25",
+        "May '25",
+        "Jun '25",
+        "Jul '25",
+        "Aug '25",
+        "Sep '25",
+        "Oct '25",
+        "Nov '25",
+        "Dec '25",
+        "Jan '26",
+        "Feb '26",
+        "Mar '26",
+        "Apr '26"
+      ],
+      "headline": [
+        2.6,
+        2.7,
+        2.6,
+        2.7,
+        2.4,
+        2.3,
+        2.5,
+        2.6,
+        2.6,
+        2.7,
+        2.8,
+        2.7,
+        2.8,
+        2.9,
+        2.9,
+        2.9,
+        3.5,
+        3.8
+      ],
+      "core": [
+        3,
+        3,
+        2.8,
+        3,
+        2.7,
+        2.6,
+        2.8,
+        2.8,
+        2.9,
+        2.9,
+        2.8,
+        2.8,
+        2.8,
+        3,
+        3.1,
+        3,
+        3.2,
+        3.3
+      ]
+    }
+  }
+};
+//__MM_DATA_END__
+
+/* ============================================================
+   i18n — TC primary with EN financial terms inline (house style)
+   ============================================================ */
+let LANG = "en";
+const I = {
+  sub:{en:"CPI · Jobs · PCE",tc:"通膨 · 就業 · PCE"},
+  gateTitle:{en:"Restricted research terminal",tc:"研究終端（受限存取）"},
+  gateSub:{en:"Enter access key to continue.",tc:"請輸入存取金鑰以繼續。"},
+  tabs:{ overview:{en:"Overview",tc:"總覽"}, liq:{en:"Liquidity",tc:"流動性"}, cpi:{en:"CPI",tc:"CPI 物價"}, jobs:{en:"Jobs",tc:"就業市場"}, pce:{en:"PCE",tc:"PCE 消費"} },
+  reg:{ inflation:{en:"Inflation",tc:"通膨"}, labor:{en:"Labor",tc:"就業"}, fed:{en:"Fed stance",tc:"聯準會立場"}, bias:{en:"Rate bias",tc:"利率傾向"} },
+  updated:{en:"Updated",tc:"更新"}, vintage:{en:"Data vintage",tc:"數據截止"},
+  actual:{en:"Actual",tc:"實際"}, prior:{en:"Prior",tc:"前值"}, cons:{en:"Cons.",tc:"預期"},
+  yoy:{en:"YoY",tc:"年增"}, mom:{en:"MoM",tc:"月增"}, ann3:{en:"3m a.r.",tc:"3月年化"}, ann6:{en:"6m a.r.",tc:"6月年化"},
+  vsTgt:{en:"vs 2% target",tc:"距 2% 目標"}, next:{en:"Next release",tc:"下次公布"},
+  surprise:{en:"Surprise scorecard",tc:"數據意外計分板"}, calendar:{en:"Release calendar",tc:"公布日程"},
+  fedRead:{en:"Fed read-through",tc:"對聯準會的意涵"}, component:{en:"Component detail",tc:"分項細節"},
+  altMeasures:{en:"Underlying & alternative measures",tc:"底層與替代指標"},
+  hot:{en:"hot",tc:"偏熱"}, cool:{en:"cool",tc:"偏冷"}, inline:{en:"in line",tc:"符合"}, beat:{en:"beat",tc:"超預期"}, miss:{en:"miss",tc:"遜預期"},
+  pending:{en:"FRED",tc:"FRED"}
+};
+function t(path){ const seg=path.split("."); let o=I; for(const s of seg) o=o[s]; return (o&&o[LANG])||(o&&o.en)||path; }
+function L(en,tc){ return LANG==="tc"?tc:en; }
+
+function setLang(l){
+  LANG=l;
+  document.querySelectorAll(".seg button").forEach(b=>b.classList.toggle("on", b.dataset.lang===l));
+  document.documentElement.lang = l==="tc" ? "zh-Hant" : "en";
+  document.getElementById("g-title").textContent = t("gateTitle");
+  document.getElementById("g-sub").textContent = t("gateSub");
+  if(document.getElementById("app").style.display==="block") renderAll();
+}
+
+/* ============================================================
+   format helpers
+   ============================================================ */
+const NA = '<span class="muted">—</span>';
+function n1(x){ return (x===null||x===undefined)?null:(x>0&&x!==0?"+":"")+x.toFixed(1); }
+function pct(x){ return (x===null||x===undefined)?NA:x.toFixed(1)+"%"; }
+function signed(x,suf){ if(x===null||x===undefined) return NA; const s=x>0?"+":""; return s+x.toFixed(1)+(suf||""); }
+function pendTag(){ return ' <span class="pill nt">'+t("pending")+'</span>'; }
+
+/* surprise classification: dir = "inflation" (higher=hot) or "jobs" (higher=beat) */
+function surprise(actual,cons,dir){
+  if(actual===null||cons===null||actual===undefined||cons===undefined) return {cls:"nt",txt:"—",d:null};
+  const d=+(actual-cons).toFixed(1);
+  if(Math.abs(d)<0.05) return {cls:"nt",txt:t("inline"),d:0};
+  if(dir==="jobs") return d>0?{cls:"up",txt:t("beat"),d}:{cls:"dn",txt:t("miss"),d};
+  return d>0?{cls:"dn",txt:t("hot"),d}:{cls:"up",txt:t("cool"),d};
+}
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+function renderChrome(){
+  document.getElementById("b-sub").textContent = t("sub");
+  document.getElementById("vintage").innerHTML =
+    "<b>"+t("updated")+":</b> "+DATA.meta.updated+" &nbsp;·&nbsp; CPI "+DATA.meta.asof.cpi+" · Jobs "+DATA.meta.asof.jobs+" · PCE "+DATA.meta.asof.pce;
+
+  const r=DATA.regime;
+  document.getElementById("regime").innerHTML = [
+    ["reg.inflation", r.inflation, "amb"],
+    ["reg.labor", r.labor, ""],
+    ["reg.fed", r.fed, "amb"],
+    ["reg.bias", r.bias, "neg"]
+  ].map(([k,v,c])=>'<div class="cell"><div class="lbl">'+t(k)+'</div><div class="val '+c+'">'+v+'</div></div>').join("");
+
+  const tabsEl=document.getElementById("tabs");
+  const tabs=[["overview","p-overview"],["liq","p-liq"],["cpi","p-cpi"],["jobs","p-jobs"],["pce","p-pce"]];
+  tabsEl.innerHTML = tabs.map(([k,id],i)=>'<button data-p="'+id+'" class="'+(i===0?"on":"")+'" onclick="switchTab(\''+id+'\')">'+t("tabs."+k)+'</button>').join("");
+
+  document.getElementById("footer").innerHTML =
+    L("Sources: FRED (BLS CPI/CES, BEA Personal Income & Outlays), Dallas Fed (trimmed-mean PCE), Cleveland Fed (trimmed-mean/median CPI), Atlanta Fed (sticky/flexible CPI). Data baked at build time by a scheduled GitHub Action; consensus figures are maintained manually in ",
+        "資料來源：FRED（BLS CPI/CES、BEA 個人所得與支出）、達拉斯聯準（截尾平均 PCE）、克里夫蘭聯準（截尾平均/中位數 CPI）、亞特蘭大聯準（黏性/彈性 CPI）。數據於建置時由排程 GitHub Action 寫入；市場預期值由 ")
+    +"<code>scripts/consensus.json</code>"+L(". For internal research use only — not investment advice."," 手動維護。僅供內部研究使用，非投資建議。");
+}
+
+let CURRENT="p-overview";
+function switchTab(id){
+  CURRENT=id;
+  document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("on", b.dataset.p===id));
+  document.querySelectorAll(".panel").forEach(p=>p.classList.toggle("on", p.id===id));
+  drawCharts(id);
+}
+
+function kpi(lbl,en,valHtml,rows){
+  return '<div class="kpi"><div class="k-lbl">'+lbl+'<span class="en">'+en+'</span></div>'
+    +'<div class="k-val">'+valHtml+'</div>'
+    +(rows?'<div class="k-row">'+rows+'</div>':'')+'</div>';
+}
+function kitem(lbl,val){ return '<div class="k-item">'+lbl+'<b>'+val+'</b></div>'; }
+
+/* ---------- OVERVIEW ---------- */
+function renderOverview(){
+  const c=DATA.cpi,j=DATA.jobs,p=DATA.pce;
+  // surprise scorecard rows
+  const rows=[
+    ["CPI "+t("yoy"), "headline", c.headline.yoy, c.headline.consYoY, "%","inflation"],
+    ["Core CPI "+t("yoy"),"core", c.core.yoy, c.core.consYoY, "%","inflation"],
+    ["Core PCE "+t("yoy"),"core", p.core.yoy, p.core.consYoY, "%","inflation"],
+    ["PCE "+t("yoy"),"headline", p.headline.yoy, p.headline.consYoY, "%","inflation"],
+    [L("Nonfarm payrolls","非農就業"),"nfp", j.nfp.actual, j.nfp.cons, "K","jobs"],
+    [L("Unemployment","失業率"),"u3", j.unrate.actual, j.unrate.cons, "%","inflation"]
+  ];
+  const scoreRows = rows.map(([nm,_,a,co,suf,dir])=>{
+    const s=surprise(a,co,dir);
+    const av=(suf==="K")?(a>0?"+"+a:a)+"K":a.toFixed(1)+"%";
+    const cv=(co===null)?"—":((suf==="K")?(co>0?"+"+co:co)+"K":co.toFixed(1)+"%");
+    return '<tr><td class="name">'+nm+'</td><td class="num">'+av+'</td><td class="num muted">'+cv+'</td>'
+      +'<td><span class="pill '+s.cls+'">'+s.txt+(s.d!==null&&s.d!==0?' '+(s.d>0?"+":"")+s.d:'')+'</span></td></tr>';
+  }).join("");
+
+  const cal=DATA.meta.next;
+  const calHtml=[["jobs",cal.jobs],["cpi",cal.cpi],["pce",cal.pce],["fomc",cal.fomc]].map(([k,e])=>
+    '<div class="ev"><div class="nm">'+e.l+'</div><div class="dt">'+e.d+'</div></div>').join("");
+
+  const el=document.getElementById("p-overview");
+  el.innerHTML =
+    '<h2 class="sec">'+t("fedRead")+'</h2>'
+    +'<div class="synth"><div class="hdr">'+L("Higher-for-longer · hike-risk skew","維持高利率 · 升息風險偏向")+'</div>'
+    + L(
+        "Both headline gauges sit at <b>3.8% YoY</b> and core PCE — the Fed's target measure — has climbed to <b>3.3%</b>, its highest since late 2023 and still rising, against a 2% goal. The driver is the energy/war shock, not demand: <b>core CPI goods are flat</b> and the Dallas Fed trimmed-mean PCE is far cooler at <b>2.3%</b>, so the <i>underlying</i> trend is less alarming than the headline. Labor is <b>solid but narrow</b> — May payrolls +172K with unemployment at 4.3% — yet the gains lean on healthcare, local government and a World-Cup-flattered leisure print, while real wages are negative. Net: the data removes any case for cuts and keeps a live hike risk; markets price no 2026 cuts. The swing factor is the duration of the energy shock, and how much summer World Cup tourism distorts June–July prints before an H2 give-back.",
+        "兩項整體指標均為 <b>年增 3.8%</b>，而聯準會的目標指標核心 PCE 已升至 <b>3.3%</b>，為 2023 年底以來最高且仍在上行，對比 2% 目標。主因是能源/戰爭衝擊而非需求：<b>核心商品 CPI 持平</b>，達拉斯聯準截尾平均 PCE 僅 <b>2.3%</b>，顯示<i>底層</i>趨勢沒有整體數據那麼嚇人。就業<b>穩健但狹窄</b>——5 月非農 +172K、失業率 4.3%——但增幅集中在醫療、地方政府與受世界盃推升的休閒業，且實質薪資為負。結論：數據排除降息、保留升息風險；市場已不計入 2026 年降息。關鍵變數為能源衝擊持續時間，以及夏季世界盃旅遊對 6–7 月數據的扭曲與下半年的回吐。")
+    +'</div>'
+
+    +'<h2 class="sec">'+t("surprise")+' <span class="tag">'+L("actual vs consensus","實際 vs 預期")+'</span></h2>'
+    +'<table><thead><tr><th>'+L("Release","指標")+'</th><th>'+t("actual")+'</th><th>'+t("cons")+'</th><th style="text-align:left">'+t("surprise")+'</th></tr></thead><tbody>'+scoreRows+'</tbody></table>'
+
+    +'<h2 class="sec">'+t("calendar")+'</h2>'
+    +'<div class="cal">'+calHtml+'</div>'
+
+    +'<h2 class="sec">'+L("Net liquidity","淨流動性")+' <span class="tag">WALCL − TGA − RRP</span></h2>'
+    +'<div class="note">'+ (DATA.nl.tn==null
+        ? L("Populates from FRED on the next pipeline run.","下次管線執行時由 FRED 填入。")
+        : L("Net liquidity is <b>$"+DATA.nl.tn.toFixed(2)+"T</b> — <b>"+DATA.nl.zone.en+"</b> zone (supportive &gt;6.0 / uncomfortable 5.5–6.0 / stress &lt;5.5). See the Liquidity tab for the 522-week series and SOFR-IORB.",
+            "淨流動性為 <b>$"+DATA.nl.tn.toFixed(2)+"T</b>——<b>"+DATA.nl.zone.tc+"</b>區間（充裕 &gt;6.0 / 偏緊 5.5–6.0 / 壓力 &lt;5.5）。詳見「流動性」分頁的 522 週序列與 SOFR-IORB。")) +'</div>';
+}
+
+/* ---------- LIQUIDITY (Guide to the Market) ---------- */
+function renderLiquidity(){
+  const nl=DATA.nl||{}, z=nl.zone||{};
+  const zlabel = LANG==="tc" ? (z.tc||"—") : (z.en||"—");
+  const zcls = ({up:"up",am:"am",dn:"dn"})[z.k] || "nt";
+  const kpis='<div class="grid g4">'
+    + kpi(L("Net liquidity","淨流動性"),"WALCL − TGA − RRP",
+        (nl.tn==null?NA:'$'+nl.tn.toFixed(2)+'<span class="u">T</span>')+' <span class="pill '+zcls+'">'+zlabel+'</span>',
+        kitem(L("Zone","區間"), zlabel))
+    + kpi(L("SOFR − IORB","SOFR − IORB"),"funding spread",
+        (nl.sofrIorb==null?NA:(nl.sofrIorb>0?'+':'')+nl.sofrIorb+'<span class="u">bps</span>'),"")
+    + kpi(L("Fed assets","聯準會資產"),"WALCL",
+        (nl.walcl==null?NA:'$'+nl.walcl.toFixed(2)+'<span class="u">T</span>'),"")
+    + kpi(L("TGA / RRP","TGA / RRP"),"drains",
+        (nl.tga==null?NA:'$'+nl.tga.toFixed(2)+'<span class="u">T</span>'),
+        kitem("RRP", nl.rrp==null?NA:'$'+Math.round(nl.rrp)+'B'))
+    +'</div>';
+  const zoneNote='<div class="note"><b>'+L("Zone framework","區間框架")+'.</b> '
+    + L("Supportive &gt; $6.0T \u00b7 uncomfortable $5.5\u20136.0T \u00b7 stress &lt; $5.5T (maps to roughly S&P 6,000\u20136,200). With RRP drained to near zero, the old liquidity buffer is gone \u2014 TGA swings now pass straight through to reserves.",
+        "\u5145\u88d5 &gt; $6.0T \u00b7 \u504f\u7dca $5.5\u20136.0T \u00b7 \u58d3\u529b &lt; $5.5T\uff08\u5927\u81f4\u5c0d\u61c9 S&P 6,000\u20136,200\uff09\u3002RRP \u5df2\u63a5\u8fd1\u96f6\uff0c\u820a\u7684\u6d41\u52d5\u6027\u7df3\u885d\u4e0d\u5728\u2014\u2014TGA \u6ce2\u52d5\u73fe\u5728\u76f4\u63a5\u50b3\u5c0e\u81f3\u6e96\u5099\u91d1\u3002")
+    +'</div>';
+  document.getElementById("p-liq").innerHTML =
+    '<h2 class="sec">'+L("Net liquidity","淨流動性")+' <span class="tag">FRED H.4.1 \u00b7 weekly</span></h2>'+kpis
+    + zoneNote
+    +'<h2 class="sec">'+L("522-week net liquidity vs S&P 500","522 週淨流動性 vs S&P 500")+'</h2>'
+    +'<div class="chartbox"><div class="ch-title">'+L("Net liquidity ($T, left) vs S&P 500 (right)","淨流動性（兆美元，左軸）vs S&P 500（右軸）")+'</div>'
+    +'<div class="ch-note">'+L("Dashed lines mark the $6.0T / $5.5T zone thresholds. NL = WALCL − TGA − RRP.","虛線標示 $6.0T / $5.5T 區間門檻。NL = WALCL − TGA − RRP。")+'</div>'
+    +'<div class="cwrap" style="height:340px"><canvas id="ch-nl" role="img" aria-label="Line chart of net liquidity versus S and P 500 over 522 weeks"></canvas></div></div>';
+}
+
+/* ---------- CPI ---------- */
+function renderCPI(){
+  const c=DATA.cpi;
+  const hsur=surprise(c.headline.yoy,c.headline.consYoY,"inflation");
+  const csur=surprise(c.core.yoy,c.core.consYoY,"inflation");
+
+  const kpis='<div class="grid g4">'
+    + kpi(L("Headline CPI","整體 CPI"),"CPI YoY",
+        pct(c.headline.yoy)+' <span class="pill '+hsur.cls+'">'+hsur.txt+'</span>',
+        kitem(t("mom"),signed(c.headline.mom,"%"))+kitem(t("prior")+" "+t("yoy"),pct(c.headline.prevYoY))+kitem(t("cons")+" "+t("yoy"),pct(c.headline.consYoY)))
+    + kpi(L("Core CPI","核心 CPI"),"ex food & energy",
+        pct(c.core.yoy)+' <span class="pill '+csur.cls+'">'+csur.txt+'</span>',
+        kitem(t("mom"),signed(c.core.mom,"%"))+kitem(t("ann3"), c.core.ann3m===null?NA:signed(c.core.ann3m,"%"))+kitem(t("ann6"), c.core.ann6m===null?NA:signed(c.core.ann6m,"%")))
+    + kpi(L("Supercore","超核心"),"core svcs ex-shelter",
+        c.supercore.yoy===null?NA+pendTag():pct(c.supercore.yoy),
+        kitem(t("mom"), c.supercore.mom===null?NA:signed(c.supercore.mom,"%")))
+    + kpi(L("Real wages","實質時薪"),"AHE − CPI",
+        signed(c.realWages.yoy,"%"),
+        kitem(t("mom"),signed(c.realWages.mom,"%")))
+    +'</div>';
+
+  const comp = c.components.map(x=>
+    '<tr><td class="name">'+L(x.k,x.tc)+'<span class="nt2">'+x.n+'</span></td>'
+    +'<td class="num">'+(x.yoy===null?NA+pendTag():pct(x.yoy))+'</td>'
+    +'<td class="num">'+(x.mom===null?NA:signed(x.mom,"%"))+'</td></tr>').join("");
+
+  const a=c.alt;
+  const altRows=[
+    [L("Trimmed-mean CPI","截尾平均 CPI"),"Cleveland Fed · TRMMEANCPIM159SFRBCLE",a.trimmedMean],
+    [L("Median CPI","中位數 CPI"),"Cleveland Fed · MEDCPIM159SFRBCLE",a.median],
+    [L("Sticky CPI","黏性 CPI"),"Atlanta Fed · CORESTICKM159SFRBATL",a.sticky],
+    [L("Flexible CPI","彈性 CPI"),"Atlanta Fed · FLEXCPIM159SFRBATL",a.flexible]
+  ].map(([nm,src,v])=>'<tr><td class="name">'+nm+'<span class="nt2">'+src+'</span></td><td class="num">'+(v===null?NA+pendTag():pct(v))+'</td></tr>').join("");
+
+  document.getElementById("p-cpi").innerHTML =
+    '<h2 class="sec">'+L("Headline figures","頭條數據")+' <span class="tag">'+DATA.meta.asof.cpi+'</span></h2>'+kpis
+    +'<h2 class="sec">'+t("component")+'</h2>'
+    +'<table><thead><tr><th>'+L("Component","分項")+'</th><th>'+t("yoy")+'</th><th>'+t("mom")+'</th></tr></thead><tbody>'+comp+'</tbody></table>'
+    +'<h2 class="sec">'+t("altMeasures")+'</h2>'
+    +'<table><thead><tr><th>'+L("Measure","指標")+'</th><th>'+t("yoy")+'</th></tr></thead><tbody>'+altRows+'</tbody></table>'
+    +'<h2 class="sec">'+L("Trend","趨勢")+'</h2>'
+    +'<div class="chartbox"><div class="ch-title">'+L("Headline vs core CPI, YoY %","整體 vs 核心 CPI（年增 %）")+'</div>'
+    +'<div class="ch-note">'+L("Launch snapshot shows the war-driven spike (Feb→Apr); full history backfills from FRED on first pipeline run.","啟動快照顯示戰爭推升的跳升（2→4 月）；完整歷史於首次管線執行時由 FRED 回補。")+'</div>'
+    +'<div class="cwrap" style="height:260px"><canvas id="ch-cpi" role="img" aria-label="Line chart of headline and core CPI year-over-year"></canvas></div></div>'
+    +'<div class="note" style="margin-top:14px">'+L("<b>Read:</b> headline 3.8% is energy-led (gasoline +28.4% YoY), but core goods are flat and trimmed-mean runs cooler — the Fed will weigh the sticky services pass-through (airfares) more than the headline.","<b>解讀：</b>整體 3.8% 由能源主導（汽油年增 +28.4%），但核心商品持平、截尾平均較低——聯準會更看重黏性服務的傳導（機票）而非整體數字。")+'</div>';
+}
+
+/* ---------- JOBS ---------- */
+function renderJobs(){
+  const j=DATA.jobs;
+  const nsur=surprise(j.nfp.actual,j.nfp.cons,"jobs");
+
+  const kpis='<div class="grid g4">'
+    + kpi(L("Nonfarm payrolls","非農就業"),"NFP MoM",
+        '+'+j.nfp.actual+'<span class="u">K</span> <span class="pill '+nsur.cls+'">'+nsur.txt+'</span>',
+        kitem(t("prior"),"+"+j.nfp.prior+"K")+kitem(t("cons"),"+"+j.nfp.cons+"K")+kitem(L("3m avg","3月均"),"+"+j.nfp.ann3m+"K"))
+    + kpi(L("Unemployment","失業率"),"U-3",
+        pct(j.unrate.actual),
+        kitem("U-6", j.u6.actual===null?NA+pendTag():pct(j.u6.actual))+kitem(L("Partic.","參與率"),pct(j.partic.actual))+kitem("Emp-pop",pct(j.epop.actual)))
+    + kpi(L("Avg hourly earnings","平均時薪"),"AHE",
+        pct(j.ahe.yoy),
+        kitem(t("mom"),signed(j.ahe.mom,"%"))+kitem(L("Level","水準"),"$"+j.ahe.level.toFixed(2)))
+    + kpi(L("Sahm rule","Sahm 法則"),"recession trigger 0.50",
+        (j.sahm.actual).toFixed(2)+'<span class="u">pt</span>',
+        kitem(L("Trigger","觸發"),j.sahm.trigger.toFixed(2))+kitem(L("Status","狀態"),'<span class="pos">'+L("clear","未觸發")+'</span>'))
+    +'</div>';
+
+  const wc=j.worldCup;
+  const wcNote='<div class="note"><b>'+L("World Cup distortion","世界盃扭曲")+'.</b> '
+    + L("Leisure & hospitality added <b>"+wc.lhTotal+"K</b> vs a ~"+wc.lhTrend+"K trend — pre-tournament hiring (BofA's \u201cWorld Cup fever\u201d). Ex-L&H, payrolls were still <b>+"+wc.exLH+"K</b>, a beat, so the labor market isn't secretly weak. Expect Jun/Jul prints to run hotter (tournament Jun 11–Jul 19) and an H2 give-back as temp roles roll off — don't extrapolate the 3-month trend.",
+        "休閒與酒店業增加 <b>"+wc.lhTotal+"K</b>，對比約 "+wc.lhTrend+"K 的趨勢——賽前招聘（美銀稱「世界盃熱」）。剔除休閒業後非農仍 <b>+"+wc.exLH+"K</b>、超預期，故就業市場並非暗弱。預期 6–7 月數據更熱（賽事 6/11–7/19），下半年隨臨時職位退場而回吐——勿外推 3 個月趨勢。")
+    +'</div>';
+
+  const rev=j.revisions.map(x=>{
+    const d=x.r-x.i;
+    return '<tr><td class="name">'+x.m+'</td><td class="num muted">+'+x.i+'K</td><td class="num">+'+x.r+'K</td><td class="num '+(d>=0?"pos":"neg")+'">'+(d>0?"+":"")+d+'K</td></tr>';
+  }).join("");
+
+  const jo=j.jolts;
+  const joKpis='<div class="grid g4">'
+    + kpi(L("Job openings","職位空缺"),"JOLTS · "+jo.asof, jo.openings.toFixed(1)+'<span class="u">M</span>',"")
+    + kpi(L("Quits rate","主動離職率"),"quits/employment", pct(jo.quitsRate),kitem(L("Quits","離職"),jo.quits.toFixed(1)+"M"))
+    + kpi(L("Hires","聘僱"),"JOLTS", jo.hires.toFixed(1)+'<span class="u">M</span>',"")
+    + kpi(L("Separations","離職總數"),"JOLTS", jo.separations.toFixed(1)+'<span class="u">M</span>',"")
+    +'</div>';
+
+  document.getElementById("p-jobs").innerHTML =
+    '<h2 class="sec">'+L("Headline figures","頭條數據")+' <span class="tag">'+DATA.meta.asof.jobs+'</span></h2>'+kpis
+    + wcNote
+    +'<h2 class="sec">'+L("Payroll change by industry","各行業就業變動")+' <span class="tag">'+L("MoM, 000s, SA","月增, 千人, 季調")+'</span></h2>'
+    +'<div class="chartbox"><div class="ch-title">'+L("May 2026 sector waterfall","2026 年 5 月行業瀑布圖")+'</div>'
+    +'<div class="ch-note">'+L("Green = gain · gray = little changed · coral = loss","綠 = 增加 · 灰 = 變動不大 · 珊瑚 = 減少")+'</div>'
+    +'<div class="cwrap" style="height:430px"><canvas id="ch-sect" role="img" aria-label="Bar chart of job change by sector for May 2026"></canvas></div></div>'
+    +'<h2 class="sec">'+L("Revisions tracker","修正追蹤")+'</h2>'
+    +'<table><thead><tr><th>'+L("Month","月份")+'</th><th>'+L("Initial","初值")+'</th><th>'+L("Revised","修正後")+'</th><th>'+L("Net","淨")+'</th></tr></thead><tbody>'+rev+'</tbody></table>'
+    +'<h2 class="sec">'+L("Turnover (JOLTS)","勞動流動 (JOLTS)")+' <span class="tag">'+L("low-hire / low-fire","低聘僱 / 低裁員")+'</span></h2>'+joKpis
+    +'<h2 class="sec">'+L("Payroll trajectory","非農走勢")+'</h2>'
+    +'<div class="chartbox"><div class="ch-title">'+L("Nonfarm payroll change, 000s","非農就業變動（千人）")+'</div>'
+    +'<div class="ch-note">'+L("Recent prints incl. revisions; full history backfills from FRED.","近期數據（含修正）；完整歷史由 FRED 回補。")+'</div>'
+    +'<div class="cwrap" style="height:240px"><canvas id="ch-nfp" role="img" aria-label="Bar chart of nonfarm payroll change by month"></canvas></div></div>';
+}
+
+/* ---------- PCE ---------- */
+function renderPCE(){
+  const p=DATA.pce;
+  const hsur=surprise(p.headline.yoy,p.headline.consYoY,"inflation");
+  const csur=surprise(p.core.yoy,p.core.consYoY,"inflation");
+  const vsT=(p.core.yoy===null)?NA:signed(+(p.core.yoy-2).toFixed(1),"pp");
+
+  const kpis='<div class="grid g4">'
+    + kpi(L("Core PCE","核心 PCE"),"Fed's gauge",
+        pct(p.core.yoy)+' <span class="pill '+csur.cls+'">'+csur.txt+'</span>',
+        kitem(t("mom"),signed(p.core.mom,"%"))+kitem(t("vsTgt"),vsT)+kitem(t("prior")+" "+t("yoy"),pct(p.core.prevYoY)))
+    + kpi(L("Headline PCE","整體 PCE"),"PCE YoY",
+        pct(p.headline.yoy)+' <span class="pill '+hsur.cls+'">'+hsur.txt+'</span>',
+        kitem(t("mom"),signed(p.headline.mom,"%"))+kitem(t("cons")+" "+t("mom"),signed(p.headline.consMoM,"%")))
+    + kpi(L("Trimmed-mean PCE","截尾平均 PCE"),"Dallas Fed",
+        pct(p.trimmedMean.yoy),
+        kitem(L("vs core","對比核心"),signed(+(p.trimmedMean.yoy-p.core.yoy).toFixed(1),"pp")))
+    + kpi(L("Saving rate","儲蓄率"),"% of DPI",
+        pct(p.savingRate.actual),
+        kitem(L("Income","所得"),signed(p.income.mom,"%"))+kitem(L("Spending","消費"),signed(p.spending.mom,"%")))
+    +'</div>';
+
+  const detail=[
+    [L("Goods PCE","商品 PCE"),"MoM",signed(p.goods.mom,"%")],
+    [L("Services PCE","服務 PCE"),"MoM",signed(p.services.mom,"%")],
+    [L("Supercore PCE","超核心 PCE")+" ("+L("svcs ex-housing","服務除居住")+")","YoY",p.supercore.yoy===null?NA+pendTag():pct(p.supercore.yoy)],
+    [L("Disposable income","可支配所得"),"MoM",signed(p.dpi.mom,"%")],
+    [L("Real GDP","實質 GDP")+" ("+p.gdp.q+")","SAAR",signed(p.gdp.saar,"%")]
+  ].map(([nm,b,v])=>'<tr><td class="name">'+nm+'</td><td class="num muted">'+b+'</td><td class="num">'+v+'</td></tr>').join("");
+
+  const ncNote='<div class="note"><b>'+L("PCE nowcast","PCE 即時預估")+'.</b> '
+    + L("Because CPI and PPI print before PCE, the pipeline derives a core-PCE estimate for the next release from their components — giving you a read ~2 weeks ahead of BEA. Populates on first run: ",
+        "由於 CPI 與 PPI 先於 PCE 公布，管線會由其分項推導下一期核心 PCE 估計值——較 BEA 提前約 2 週。首次執行後填入：")
+    + (p.nowcast.coreNext===null?'<span class="pill nt">'+t("pending")+'</span>':'<b>'+pct(p.nowcast.coreNext)+'</b>')+'</div>';
+
+  document.getElementById("p-pce").innerHTML =
+    '<h2 class="sec">'+L("Headline figures","頭條數據")+' <span class="tag">'+DATA.meta.asof.pce+'</span></h2>'+kpis
+    + ncNote
+    +'<h2 class="sec">'+t("component")+'</h2>'
+    +'<table><thead><tr><th>'+L("Measure","指標")+'</th><th>'+L("Basis","基準")+'</th><th>'+L("Value","數值")+'</th></tr></thead><tbody>'+detail+'</tbody></table>'
+    +'<h2 class="sec">'+L("Core PCE vs target","核心 PCE 對比目標")+'</h2>'
+    +'<div class="chartbox"><div class="ch-title">'+L("Headline vs core PCE, YoY % (2% target dashed)","整體 vs 核心 PCE（年增 %，2% 目標虛線）")+'</div>'
+    +'<div class="ch-note">'+L("Launch snapshot; full history backfills from FRED.","啟動快照；完整歷史由 FRED 回補。")+'</div>'
+    +'<div class="cwrap" style="height:260px"><canvas id="ch-pce" role="img" aria-label="Line chart of headline and core PCE versus 2 percent target"></canvas></div></div>'
+    +'<div class="note" style="margin-top:14px">'+L("<b>Read:</b> core PCE 3.3% is the binding number for the Fed and it's rising, but trimmed-mean at 2.3% says the breadth is narrower than the core suggests — the gap is the energy/airfare pass-through the Fed may look through if the war premium fades.","<b>解讀：</b>核心 PCE 3.3% 是聯準會的關鍵數字且在上行，但截尾平均 2.3% 顯示廣度比核心所示更窄——差距即能源/機票傳導，若戰爭溢價消退聯準會或將忽略。")+'</div>';
+}
+
+function renderAll(){
+  renderChrome();
+  renderOverview(); renderLiquidity(); renderCPI(); renderJobs(); renderPCE();
+  switchTab(CURRENT);
+}
+
+/* ============================================================
+   CHARTS
+   ============================================================ */
+const CHARTS={};
+const GRID="rgba(255,255,255,0.06)", TICK="#8b98a5", FONT="JetBrains Mono";
+function baseLine(extra){ return Object.assign({responsive:true,maintainAspectRatio:false,
+  plugins:{legend:{display:false},tooltip:{titleFont:{family:FONT},bodyFont:{family:FONT}}},
+  scales:{x:{ticks:{color:TICK,font:{family:FONT,size:11}},grid:{color:GRID}},
+          y:{ticks:{color:TICK,font:{family:FONT,size:11},callback:v=>v+"%"},grid:{color:GRID}}}}, extra||{}); }
+
+function drawCharts(panelId){
+  if(typeof Chart==="undefined") return;
+  if(panelId==="p-liq"){
+    const nl=DATA.nl; if(nl&&nl.series){
+      const n=nl.series.labels.length;
+      mk("ch-nl",{type:"line",data:{labels:nl.series.labels,datasets:[
+        {label:"Net liquidity",yAxisID:"y",data:nl.series.nl,borderColor:"#f5a623",backgroundColor:"#f5a623",borderWidth:2,pointRadius:0,tension:.1},
+        {label:"S&P 500",yAxisID:"y1",data:nl.series.spx,borderColor:"#58a6ff",backgroundColor:"#58a6ff",borderWidth:1.5,pointRadius:0,tension:.1},
+        {label:"6.0T",yAxisID:"y",data:Array(n).fill(6.0),borderColor:"#5f6b78",borderDash:[5,4],borderWidth:1,pointRadius:0},
+        {label:"5.5T",yAxisID:"y",data:Array(n).fill(5.5),borderColor:"#5f6b78",borderDash:[2,4],borderWidth:1,pointRadius:0}
+      ]},options:{responsive:true,maintainAspectRatio:false,interaction:{intersect:false,mode:"index"},
+        plugins:{legend:{display:false},tooltip:{titleFont:{family:FONT},bodyFont:{family:FONT}}},
+        scales:{x:{ticks:{color:TICK,font:{family:FONT,size:10},maxTicksLimit:10,autoSkip:true},grid:{color:GRID}},
+                y:{position:"left",ticks:{color:TICK,font:{family:FONT,size:11},callback:v=>"$"+v+"T"},grid:{color:GRID}},
+                y1:{position:"right",ticks:{color:TICK,font:{family:FONT,size:11}},grid:{display:false}}}}});
+    }
+  }
+  if(panelId==="p-cpi"){
+    const c=DATA.cpi;
+    mk("ch-cpi",{type:"line",data:{labels:c.series.labels,datasets:[
+      {label:"Headline",data:c.series.headline,borderColor:"#f5a623",backgroundColor:"#f5a623",tension:.25,borderWidth:2,pointRadius:3},
+      {label:"Core",data:c.series.core,borderColor:"#58a6ff",backgroundColor:"#58a6ff",borderDash:[5,4],tension:.25,borderWidth:2,pointRadius:3}
+    ]},options:baseLine()});
+  }
+  if(panelId==="p-pce"){
+    const p=DATA.pce, n=p.series.labels.length;
+    mk("ch-pce",{type:"line",data:{labels:p.series.labels,datasets:[
+      {label:"Headline",data:p.series.headline,borderColor:"#f5a623",backgroundColor:"#f5a623",tension:.25,borderWidth:2,pointRadius:3},
+      {label:"Core",data:p.series.core,borderColor:"#58a6ff",backgroundColor:"#58a6ff",borderDash:[5,4],tension:.25,borderWidth:2,pointRadius:3},
+      {label:"Target",data:Array(n).fill(2),borderColor:"#5f6b78",borderDash:[3,3],borderWidth:1,pointRadius:0}
+    ]},options:baseLine()});
+  }
+  if(panelId==="p-jobs"){
+    const j=DATA.jobs;
+    const cols=j.sectors.map(s=> s.v<0?"#d85a30":(s.v===0?"#5f6b78":"#3fb950"));
+    mk("ch-sect",{type:"bar",data:{labels:j.sectors.map(s=>L(s.k,s.tc)),datasets:[{data:j.sectors.map(s=>s.v),backgroundColor:cols,borderWidth:0,barThickness:20}]},
+      options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,layout:{padding:{right:24}},
+        plugins:{legend:{display:false},tooltip:{titleFont:{family:FONT},bodyFont:{family:FONT},callbacks:{label:c=>{const v=c.parsed.x;return v===0?"≈0 (little changed)":(v>0?"+":"")+v+"K";}}}},
+        scales:{x:{suggestedMin:-30,suggestedMax:80,ticks:{color:TICK,font:{family:FONT,size:11},callback:v=>(v>0?"+":"")+v},grid:{color:c=>c.tick.value===0?"rgba(255,255,255,.3)":GRID}},
+                y:{ticks:{color:TICK,font:{family:FONT,size:11}},grid:{display:false}}}}});
+    mk("ch-nfp",{type:"bar",data:{labels:j.series.labels,datasets:[{data:j.series.nfp,backgroundColor:j.series.nfp.map(v=>v<0?"#d85a30":"#3fb950"),borderWidth:0}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{titleFont:{family:FONT},bodyFont:{family:FONT},callbacks:{label:c=>(c.parsed.y>0?"+":"")+c.parsed.y+"K"}}},
+        scales:{x:{ticks:{color:TICK,font:{family:FONT,size:11}},grid:{color:GRID}},
+                y:{ticks:{color:TICK,font:{family:FONT,size:11},callback:v=>v+"K"},grid:{color:c=>c.tick.value===0?"rgba(255,255,255,.25)":GRID}}}}});
+  }
+}
+function mk(id,cfg){ const el=document.getElementById(id); if(!el) return; if(CHARTS[id]) CHARTS[id].destroy(); CHARTS[id]=new Chart(el,cfg); }
+
+/* auto-unlock if already verified this session */
+if(sessionStorage.getItem("mm_ok")==="1") reveal();
+</script>
+</body>
+</html>

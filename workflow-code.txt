@@ -1,0 +1,42 @@
+name: Update macro data
+
+on:
+  workflow_dispatch:        # manual "Run workflow" button
+  schedule:
+    - cron: "45 13 * * 1-5" # 13:45 UTC weekdays, after 08:30 ET releases
+  push:
+    branches: [ main ]
+    paths:                  # re-bake when the script or hand-maintained inputs change
+      - "scripts/**"
+      - ".github/workflows/update-data.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: macro-data
+  cancel-in-progress: false
+
+jobs:
+  bake:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Bake FRED data into the dashboard
+        env:
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+        run: node scripts/fetch-fred.mjs
+      - name: Commit if data changed
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --staged --quiet; then
+            echo "No data change — nothing to commit."
+          else
+            git commit -m "data: refresh macro snapshot"
+            git push
+          fi

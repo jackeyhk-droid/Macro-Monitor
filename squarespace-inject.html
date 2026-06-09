@@ -1,0 +1,23 @@
+<!-- ============================================================= -->
+<!-- Macro Monitor - Squarespace FULL-PAGE TAKEOVER                -->
+<!-- Paste into the PAGE-level Code Injection:                     -->
+<!--   Page Settings > Advanced > Page Header Code Injection       -->
+<!-- Then replace YOUR-APP.vercel.app on the iframe.src line.      -->
+<!-- ============================================================= -->
+<style>
+  html, body { margin: 0 !important; padding: 0 !important; height: 100% !important; background: #0d1117 !important; }
+  body > *:not(#mm-takeover) { display: none !important; }
+  #mm-takeover { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; border: 0; z-index: 2147483647; }
+</style>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var iframe = document.createElement('iframe');
+    iframe.src = "https://YOUR-APP.vercel.app/";   /* <-- replace with your Vercel URL (keep https:// and the trailing slash) */
+    iframe.id = "mm-takeover";
+    iframe.setAttribute('frameborder', '0');
+    iframe.setAttribute('allowfullscreen', 'true');
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+    document.body.appendChild(iframe);
+  });
+</script>
