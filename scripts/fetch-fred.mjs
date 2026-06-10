@@ -33,6 +33,21 @@ const S = {
   cpiShelterN:["CUUR0000SAH1"], cpiCoreGoodsN:["CUUR0000SACL1E"], cpiCoreSvcsN:["CUUR0000SASLE"],
   trimCPI:["TRMMEANCPIM159SFRBCLE"], medianCPI:["MEDCPIM159SFRBCLE"],
   stickyCPI:["CORESTICKM159SFRBATL"], flexCPI:["COREFLEXCPIM159SFRBATL"],
+  // Table A line items (SA for MoM, NSA for YoY) — mirrors the BLS release summary table
+  taFoodHome:["CUSR0000SAF11"], taFoodHomeN:["CUUR0000SAF11"],
+  taFoodAway:["CUSR0000SEFV"], taFoodAwayN:["CUUR0000SEFV"],
+  taEnCom:["CUSR0000SACE"], taEnComN:["CUUR0000SACE"],
+  taGas:["CUSR0000SETB01"], taGasN:["CUUR0000SETB01"],
+  taFuelOil:["CUSR0000SEHE"], taFuelOilN:["CUUR0000SEHE"],
+  taEnSvc:["CUSR0000SEHF"], taEnSvcN:["CUUR0000SEHF"],
+  taElec:["CUSR0000SEHF01"], taElecN:["CUUR0000SEHF01"],
+  taPipedGas:["CUSR0000SEHF02"], taPipedGasN:["CUUR0000SEHF02"],
+  taNewVeh:["CUSR0000SETA01"], taNewVehN:["CUUR0000SETA01"],
+  taUsedCars:["CUSR0000SETA02"], taUsedCarsN:["CUUR0000SETA02"],
+  taApparel:["CPIAPPSL"], taApparelN:["CPIAPPNS"],
+  taMedCom:["CUSR0000SAM1"], taMedComN:["CUUR0000SAM1"],
+  taTransSvc:["CUSR0000SAS4"], taTransSvcN:["CUUR0000SAS4"],
+  taMedSvc:["CUSR0000SAM2"], taMedSvcN:["CUUR0000SAM2"],
   // PCE
   pceHeadline:["PCEPI"], pceCore:["PCEPILFE"], trimPCE:["PCETRIM12M159SFRBDAL"],
   pceGoods:["DGDSRG3M086SBEA"], pceServices:["DSERRG3M086SBEA"], pceSuperServ:["IA001176M"],
@@ -117,6 +132,57 @@ async function main() {
   ];
   const sectors = sectorDefs.map(([k, tc, key]) => ({ k, tc, v: chg(key) ?? 0 })).sort((a, b) => b.v - a.v);
 
+  // ---- Table A (BLS release summary hierarchy: 21 rows, SA MoM ×3 + NSA YoY) ----
+  const TA = [
+    ["All items","所有項目",0,"cpiHeadline","cpiHeadlineN"],
+    ["Food","食品",1,"cpiFood","cpiFoodN"],
+    ["Food at home","居家食品",2,"taFoodHome","taFoodHomeN"],
+    ["Food away from home","外出用餐",2,"taFoodAway","taFoodAwayN"],
+    ["Energy","能源",1,"cpiEnergy","cpiEnergyN"],
+    ["Energy commodities","能源商品",2,"taEnCom","taEnComN"],
+    ["Gasoline (all types)","汽油（全類型）",3,"taGas","taGasN"],
+    ["Fuel oil & other fuels","燃油及其他燃料",3,"taFuelOil","taFuelOilN"],
+    ["Energy services","能源服務",2,"taEnSvc","taEnSvcN"],
+    ["Electricity","電力",3,"taElec","taElecN"],
+    ["Utility (piped) gas","管道燃氣",3,"taPipedGas","taPipedGasN"],
+    ["All items less food & energy","核心（扣除食品能源）",1,"cpiCore","cpiCoreN"],
+    ["Commodities less food & energy","核心商品",2,"cpiCoreGoods","cpiCoreGoodsN"],
+    ["New vehicles","新車",3,"taNewVeh","taNewVehN"],
+    ["Used cars and trucks","二手車",3,"taUsedCars","taUsedCarsN"],
+    ["Apparel","服飾",3,"taApparel","taApparelN"],
+    ["Medical care commodities","醫療商品",3,"taMedCom","taMedComN"],
+    ["Services less energy services","核心服務",2,"cpiCoreSvcs","cpiCoreSvcsN"],
+    ["Shelter","居住",3,"cpiShelter","cpiShelterN"],
+    ["Transportation services","運輸服務",3,"taTransSvc","taTransSvcN"],
+    ["Medical care services","醫療服務",3,"taMedSvc","taMedSvcN"]
+  ];
+  const taDates = get("cpiHeadline").slice(-3).map(o => o.d);
+  // SA first for MoM; NSA fallback (BLS shows unadjusted changes for NSA-only items)
+  const momOn = (sa, nsa, d) => {
+    const p = addMonths(d, 1);
+    for (const arr of [sa, nsa]) {
+      const a1 = at(arr, d), a0 = at(arr, p);
+      if (a1 && a0) return r1((a1.v / a0.v - 1) * 100);
+    }
+    return null;
+  };
+  const yoyOn = (nsa, sa, d) => {
+    const b = addMonths(d, 12);
+    for (const arr of [nsa, sa]) {
+      const a1 = at(arr, d), a0 = at(arr, b);
+      if (a1 && a0) return r1((a1.v / a0.v - 1) * 100);
+    }
+    return null;
+  };
+  const tableA = {
+    months: taDates.map(fmtMon),
+    rows: TA.map(([k, tc, i, saK, nsaK]) => ({
+      k, tc, i,
+      yoy: yoyOn(get(nsaK), get(saK), taDates.at(-1)),
+      m: taDates.map(d => momOn(get(saK), get(nsaK), d))
+    }))
+  };
+
   // ---- Net liquidity (Guide to the Market): NL = WALCL/1000 - TGA/1000 - RRP, in $bn ----
   const wal = get("walcl"), tg = get("tga"), rr = get("rrp"), spx = get("sp500");
   const nlBnAt = w => w.v / 1000 - (asof(tg, w.d) ?? 0) / 1000 - (asof(rr, w.d) ?? 0);
@@ -153,6 +219,7 @@ async function main() {
         { k: "Core services", tc: "\u6838\u5fc3\u670d\u52d9", yoy: yoy(get("cpiCoreSvcsN")), mom: mom(get("cpiCoreSvcs")), n: "" }
       ],
       alt: { trimmedMean: r1(last("trimCPI")), sticky: r1(last("stickyCPI")), flexible: r1(last("flexCPI")), median: r1(last("medianCPI")) },
+      tableA,
       series: tail(get("cpiHeadlineN"), get("cpiCoreN"), 18)
     },
     jobs: {
