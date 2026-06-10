@@ -98,6 +98,11 @@
   td.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
   tr:last-child td{border-bottom:none}
   tbody tr:hover{background:var(--panel2)}
+  .ta-wrap{overflow-x:auto}
+  .ta-wrap table{min-width:640px}
+  .ta-i1{padding-left:30px!important}.ta-i2{padding-left:48px!important}.ta-i3{padding-left:66px!important}
+  tr.ta-agg td{font-weight:600}
+  td.ta-neg{color:#3fb950}
 
   .chartbox{background:var(--panel);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px}
   .chartbox .ch-title{font-size:12.5px;font-weight:600;color:var(--tx2);margin-bottom:4px}
@@ -202,7 +207,7 @@ const DATA = {
       "jobs": "May 2026",
       "pce": "Apr 2026"
     },
-    "updated": "2026-06-09",
+    "updated": "2026-06-10",
     "note": "Auto-generated from FRED",
     "next": {
       "cpi": {
@@ -240,8 +245,8 @@ const DATA = {
     "walcl": 6.71,
     "tga": 0.88,
     "rrp": 0.6,
-    "sofrIorb": -2,
-    "spx": 7406,
+    "sofrIorb": -5,
+    "spx": 7387,
     "series": {
       "labels": [
         "Jun '16",
@@ -1887,6 +1892,246 @@ const DATA = {
       "flexible": 1.2,
       "median": 2.8
     },
+    "tableA": {
+      "months": [
+        "Feb '26",
+        "Mar '26",
+        "Apr '26"
+      ],
+      "rows": [
+        {
+          "k": "All items",
+          "tc": "所有項目",
+          "i": 0,
+          "yoy": 3.8,
+          "m": [
+            0.3,
+            0.9,
+            0.6
+          ]
+        },
+        {
+          "k": "Food",
+          "tc": "食品",
+          "i": 1,
+          "yoy": 3.2,
+          "m": [
+            0.4,
+            0,
+            0.5
+          ]
+        },
+        {
+          "k": "Food at home",
+          "tc": "居家食品",
+          "i": 2,
+          "yoy": 2.9,
+          "m": [
+            0.4,
+            -0.2,
+            0.7
+          ]
+        },
+        {
+          "k": "Food away from home",
+          "tc": "外出用餐",
+          "i": 2,
+          "yoy": 3.6,
+          "m": [
+            0.3,
+            0.2,
+            0.2
+          ]
+        },
+        {
+          "k": "Energy",
+          "tc": "能源",
+          "i": 1,
+          "yoy": 17.9,
+          "m": [
+            0.6,
+            10.9,
+            3.8
+          ]
+        },
+        {
+          "k": "Energy commodities",
+          "tc": "能源商品",
+          "i": 2,
+          "yoy": 29.2,
+          "m": [
+            1.1,
+            21.3,
+            5.6
+          ]
+        },
+        {
+          "k": "Gasoline (all types)",
+          "tc": "汽油（全類型）",
+          "i": 3,
+          "yoy": 28.4,
+          "m": [
+            0.8,
+            21.2,
+            5.4
+          ]
+        },
+        {
+          "k": "Fuel oil & other fuels",
+          "tc": "燃油及其他燃料",
+          "i": 3,
+          "yoy": 31.9,
+          "m": [
+            7.7,
+            18.8,
+            4.3
+          ]
+        },
+        {
+          "k": "Energy services",
+          "tc": "能源服務",
+          "i": 2,
+          "yoy": 5.4,
+          "m": [
+            0.2,
+            0.4,
+            1.6
+          ]
+        },
+        {
+          "k": "Electricity",
+          "tc": "電力",
+          "i": 3,
+          "yoy": 6.1,
+          "m": [
+            -0.7,
+            0.8,
+            2.1
+          ]
+        },
+        {
+          "k": "Utility (piped) gas",
+          "tc": "管道燃氣",
+          "i": 3,
+          "yoy": 3,
+          "m": [
+            3.1,
+            -0.9,
+            -0.1
+          ]
+        },
+        {
+          "k": "All items less food & energy",
+          "tc": "核心（扣除食品能源）",
+          "i": 1,
+          "yoy": 2.8,
+          "m": [
+            0.2,
+            0.2,
+            0.4
+          ]
+        },
+        {
+          "k": "Commodities less food & energy",
+          "tc": "核心商品",
+          "i": 2,
+          "yoy": 1.1,
+          "m": [
+            0.1,
+            0.1,
+            0
+          ]
+        },
+        {
+          "k": "New vehicles",
+          "tc": "新車",
+          "i": 3,
+          "yoy": 0.2,
+          "m": [
+            0,
+            0.1,
+            -0.2
+          ]
+        },
+        {
+          "k": "Used cars and trucks",
+          "tc": "二手車",
+          "i": 3,
+          "yoy": -2.7,
+          "m": [
+            -0.4,
+            -0.4,
+            0
+          ]
+        },
+        {
+          "k": "Apparel",
+          "tc": "服飾",
+          "i": 3,
+          "yoy": 4.2,
+          "m": [
+            1.3,
+            1,
+            0.6
+          ]
+        },
+        {
+          "k": "Medical care commodities",
+          "tc": "醫療商品",
+          "i": 3,
+          "yoy": -0.5,
+          "m": [
+            0,
+            -1,
+            -0.4
+          ]
+        },
+        {
+          "k": "Services less energy services",
+          "tc": "核心服務",
+          "i": 2,
+          "yoy": 3.3,
+          "m": [
+            0.3,
+            0.2,
+            0.5
+          ]
+        },
+        {
+          "k": "Shelter",
+          "tc": "居住",
+          "i": 3,
+          "yoy": 3.3,
+          "m": [
+            0.2,
+            0.3,
+            0.6
+          ]
+        },
+        {
+          "k": "Transportation services",
+          "tc": "運輸服務",
+          "i": 3,
+          "yoy": 4.3,
+          "m": [
+            0.2,
+            0.6,
+            0.3
+          ]
+        },
+        {
+          "k": "Medical care services",
+          "tc": "醫療服務",
+          "i": 3,
+          "yoy": 3.2,
+          "m": [
+            0.6,
+            0,
+            0
+          ]
+        }
+      ]
+    },
     "series": {
       "labels": [
         "Oct '24",
@@ -2409,10 +2654,27 @@ function renderCPI(){
     [L("Flexible CPI","彈性 CPI"),"Atlanta Fed · FLEXCPIM159SFRBATL",a.flexible]
   ].map(([nm,src,v])=>'<tr><td class="name">'+nm+'<span class="nt2">'+src+'</span></td><td class="num">'+(v===null?NA+pendTag():pct(v))+'</td></tr>').join("");
 
+  const ta=c.tableA;
+  let taHtml='';
+  if(ta&&ta.rows&&ta.rows.length){
+    const head='<tr><th style="text-align:left">'+L("Category","類別")+'</th>'
+      + ta.months.map(m=>'<th>'+m+'</th>').join("")
+      +'<th>'+L("12-mo","12個月")+'</th></tr>';
+    const cell=v=>v===null?'<td class="num">–</td>':'<td class="num'+(v<0?' ta-neg':'')+'">'+v.toFixed(1)+'</td>';
+    const rows=ta.rows.map(r=>
+      '<tr'+(r.i<2?' class="ta-agg"':'')+'><td class="name ta-i'+r.i+'">'+(LANG==="tc"?r.tc:r.k)+'</td>'
+      + r.m.map(cell).join("") + cell(r.yoy) + '</tr>').join("");
+    taHtml='<h2 class="sec">'+L("Release breakdown","發布分項明細")+' <span class="tag">BLS Table A</span></h2>'
+      +'<div class="ta-wrap"><table><thead>'+head+'</thead><tbody>'+rows+'</tbody></table></div>'
+      +'<div class="note" style="margin-top:10px;font-size:11px">'
+      + L("Monthly columns: seasonally adjusted MoM %. 12-mo column: NSA YoY % (BLS convention). Components BLS no longer seasonally adjusts display unadjusted changes, per BLS practice. Oct–Nov 2025 federal-shutdown gaps show as –.",
+          "月度欄：季調後月變動 %。12個月欄：未季調年增率 %（BLS 慣例）。BLS 已停止季調之分項依其慣例顯示未調整變動。2025 年 10–11 月因聯邦停擺缺值，以 – 表示。")
+      +'</div>';
+  }
+
   document.getElementById("p-cpi").innerHTML =
     '<h2 class="sec">'+L("Headline figures","頭條數據")+' <span class="tag">'+DATA.meta.asof.cpi+'</span></h2>'+kpis
-    +'<h2 class="sec">'+t("component")+'</h2>'
-    +'<table><thead><tr><th>'+L("Component","分項")+'</th><th>'+t("yoy")+'</th><th>'+t("mom")+'</th></tr></thead><tbody>'+comp+'</tbody></table>'
+    +taHtml
     +'<h2 class="sec">'+t("altMeasures")+'</h2>'
     +'<table><thead><tr><th>'+L("Measure","指標")+'</th><th>'+t("yoy")+'</th></tr></thead><tbody>'+altRows+'</tbody></table>'
     +'<h2 class="sec">'+L("Trend","趨勢")+'</h2>'
