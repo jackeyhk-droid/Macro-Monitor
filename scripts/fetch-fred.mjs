@@ -48,6 +48,22 @@ const S = {
   taMedCom:["CUSR0000SAM1"], taMedComN:["CUUR0000SAM1"],
   taTransSvc:["CUSR0000SAS4"], taTransSvcN:["CUUR0000SAS4"],
   taMedSvc:["CUSR0000SAM2"], taMedSvcN:["CUUR0000SAM2"],
+  // PPI Final Demand–Intermediate Demand (SA for MoM, NSA for YoY; FRED aliases + wps/wpu codes)
+  ppiFD:["PPIFIS"], ppiFDN:["PPIFID"],
+  ppiGoods:["PPIDGS"], ppiGoodsN:["PPIFDG"],
+  ppiFoods:["PPIDFS"], ppiFoodsN:["PPIFDF"],
+  ppiEnergy:["PPIDES"], ppiEnergyN:["PPIFDE"],
+  ppiGoodsX:["WPSFD413"], ppiGoodsXN:["WPUFD413"],
+  ppiSvcs:["PPIDSS"], ppiSvcsN:["PPIFDS"],
+  ppiTrade:["PPITSS"], ppiTradeN:["PPIDTS"],
+  ppiTrans:["PPIAWS"], ppiTransN:["PPITAW"],
+  ppiSvcsX:["PPITWS"], ppiSvcsXN:["PPITTW"],
+  ppiConstr:["PPIDCS"], ppiConstrN:["PPIFDC"],
+  ppiCore:["PPIFES"], ppiCoreN:["PPICOR"],
+  ppiCoreXT:["WPSFD49116"], ppiCoreXTN:["WPUFD49116"],
+  ppiIDProc:["WPSID61"], ppiIDProcN:["WPUID61"],
+  ppiIDUnproc:["WPSID62"], ppiIDUnprocN:["WPUID62"],
+  ppiIDSvcs:["WPSID63"], ppiIDSvcsN:["WPUID63"],
   // PCE
   pceHeadline:["PCEPI"], pceCore:["PCEPILFE"], trimPCE:["PCETRIM12M159SFRBDAL"],
   pceGoods:["DGDSRG3M086SBEA"], pceServices:["DSERRG3M086SBEA"], pceSuperServ:["IA001176M"],
@@ -88,7 +104,7 @@ async function main() {
   const raw = {};
   for (const id of need) {
     try { raw[id] = await obs(id); } catch (e) { console.warn("skip", id, e.message); raw[id] = []; }
-    await new Promise(r => setTimeout(r, 110));
+    await new Promise(r => setTimeout(r, 650)); // ~115 series: stay well under FRED 120/min
   }
   const get = k => raw[S[k][0]] || [];
   const last = k => get(k).at(-1)?.v ?? null;
@@ -174,14 +190,41 @@ async function main() {
     }
     return null;
   };
-  const tableA = {
-    months: taDates.map(fmtMon),
-    rows: TA.map(([k, tc, i, saK, nsaK]) => ({
-      k, tc, i,
-      yoy: yoyOn(get(nsaK), get(saK), taDates.at(-1)),
-      m: taDates.map(d => momOn(get(saK), get(nsaK), d))
-    }))
+  const buildBreakdown = (def, anchorKey) => {
+    const dts = get(anchorKey).slice(-3).map(o => o.d);
+    return {
+      months: dts.map(fmtMon),
+      rows: def.map(([k, tc, i, saK, nsaK]) => ({
+        k, tc, i,
+        yoy: yoyOn(get(nsaK), get(saK), dts.at(-1)),
+        m: dts.map(d => momOn(get(saK), get(nsaK), d))
+      }))
+    };
   };
+  const tableA = buildBreakdown(TA, "cpiHeadline");
+
+  // ---- PPI (Final Demand–Intermediate Demand) ----
+  const PT = [
+    ["Final demand","最終需求",0,"ppiFD","ppiFDN"],
+    ["Final demand goods","最終需求商品",1,"ppiGoods","ppiGoodsN"],
+    ["Foods","食品",2,"ppiFoods","ppiFoodsN"],
+    ["Energy","能源",2,"ppiEnergy","ppiEnergyN"],
+    ["Goods less foods & energy","商品（扣除食品能源）",2,"ppiGoodsX","ppiGoodsXN"],
+    ["Final demand services","最終需求服務",1,"ppiSvcs","ppiSvcsN"],
+    ["Trade services (margins)","貿易服務（利潤率）",2,"ppiTrade","ppiTradeN"],
+    ["Transportation & warehousing","運輸與倉儲",2,"ppiTrans","ppiTransN"],
+    ["Services less trade, transp. & whse.","服務（扣除貿易運輸倉儲）",2,"ppiSvcsX","ppiSvcsXN"],
+    ["Final demand construction","最終需求營建",1,"ppiConstr","ppiConstrN"],
+    ["Less foods & energy (core)","核心（扣除食品能源）",1,"ppiCore","ppiCoreN"],
+    ["Less foods, energy & trade svcs","核心（扣除食品能源貿易）",1,"ppiCoreXT","ppiCoreXTN"]
+  ];
+  const PID = [
+    ["Processed goods for intermediate demand","中間需求：加工品",0,"ppiIDProc","ppiIDProcN"],
+    ["Unprocessed goods for intermediate demand","中間需求：未加工品",0,"ppiIDUnproc","ppiIDUnprocN"],
+    ["Services for intermediate demand","中間需求：服務",0,"ppiIDSvcs","ppiIDSvcsN"]
+  ];
+  const ppiTable = buildBreakdown(PT, "ppiFD");
+  const ppiID = buildBreakdown(PID, "ppiFD");
 
   // ---- Net liquidity (Guide to the Market): NL = WALCL/1000 - TGA/1000 - RRP, in $bn ----
   const wal = get("walcl"), tg = get("tga"), rr = get("rrp"), spx = get("sp500");
@@ -222,6 +265,17 @@ async function main() {
       tableA,
       series: tail(get("cpiHeadlineN"), get("cpiCoreN"), 18)
     },
+    ppi: {
+      asof: ym("ppiFD"),
+      headline: { yoy: yoy(get("ppiFDN")), mom: mom(get("ppiFD")), prevYoY: prevYoY(get("ppiFDN")), consYoY: null, consMoM: null, ann3m: ann(get("ppiFD"), 3), ann6m: ann(get("ppiFD"), 6) },
+      core: { yoy: yoy(get("ppiCoreN")), mom: mom(get("ppiCore")), ann3m: ann(get("ppiCore"), 3), ann6m: ann(get("ppiCore"), 6) },
+      coreXT: { yoy: yoy(get("ppiCoreXTN")), mom: mom(get("ppiCoreXT")) },
+      goods: { yoy: yoy(get("ppiGoodsN")), mom: mom(get("ppiGoods")) },
+      services: { yoy: yoy(get("ppiSvcsN")), mom: mom(get("ppiSvcs")) },
+      tableA: ppiTable,
+      intermediate: ppiID,
+      series: tail(get("ppiFDN"), get("ppiCoreXTN"), 18)
+    },
     jobs: {
       nfp: { actual: nfp, prior: nfpPrior, cons: null, ann3m: nfp3 },
       unrate: { actual: last("unrate"), prior: prior("unrate"), cons: null },
@@ -260,7 +314,7 @@ async function main() {
   const html = readFileSync(HTML, "utf8");
   const block = `${START}\nconst DATA = ${JSON.stringify(DATA, null, 2)};\n${END}`;
   writeFileSync(HTML, html.replace(new RegExp(escapeRe(START) + "[\\s\\S]*?" + escapeRe(END)), () => block));
-  console.log(`baked ${HTML} \u2014 CPI ${DATA.meta.asof.cpi} \u00b7 Jobs ${DATA.meta.asof.jobs} \u00b7 PCE ${DATA.meta.asof.pce} \u00b7 NL $${DATA.nl.tn}T (${DATA.nl.zone.en})`);
+  console.log(`baked ${HTML} \u2014 CPI ${DATA.meta.asof.cpi} \u00b7 PPI ${DATA.ppi.asof} \u00b7 Jobs ${DATA.meta.asof.jobs} \u00b7 PCE ${DATA.meta.asof.pce} \u00b7 NL $${DATA.nl.tn}T (${DATA.nl.zone.en})`);
 }
 
 function tail(hA, cA, n) {

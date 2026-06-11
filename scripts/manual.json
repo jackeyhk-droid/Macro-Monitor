@@ -6,17 +6,44 @@
     "bias": "Hike-risk skew · no 2026 cuts priced"
   },
   "next": {
-    "cpi":  { "d": "Jun 11 2026", "l": "May CPI" },
-    "jobs": { "d": "Jul 02 2026", "l": "Jun jobs" },
-    "pce":  { "d": "Jun 25 2026", "l": "May PCE" },
-    "fomc": { "d": "Jun 17 2026", "l": "FOMC decision" }
+    "cpi": {
+      "d": "Jun 11 2026",
+      "l": "May CPI"
+    },
+    "jobs": {
+      "d": "Jul 02 2026",
+      "l": "Jun jobs"
+    },
+    "pce": {
+      "d": "Jun 25 2026",
+      "l": "May PCE"
+    },
+    "fomc": {
+      "d": "Jun 17 2026",
+      "l": "FOMC decision"
+    },
+    "ppi": {
+      "d": "Jun 11 2026",
+      "l": "May PPI"
+    }
   },
   "revisions": [
-    { "m": "Mar '26", "i": 185, "r": 214 },
-    { "m": "Apr '26", "i": 115, "r": 179 }
+    {
+      "m": "Mar '26",
+      "i": 185,
+      "r": 214
+    },
+    {
+      "m": "Apr '26",
+      "i": 115,
+      "r": 179
+    }
   ],
   "worldCupTrend": 14,
   "gdpQuarter": "Q1 '26",
-  "realWages": { "yoy": -0.3, "mom": -0.5 },
+  "realWages": {
+    "yoy": -0.3,
+    "mom": -0.5
+  },
   "diffusion": null
 }
