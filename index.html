@@ -163,6 +163,7 @@
   <section class="panel" id="p-overview"></section>
   <section class="panel" id="p-liq"></section>
   <section class="panel" id="p-cpi"></section>
+  <section class="panel" id="p-ppi"></section>
   <section class="panel" id="p-jobs"></section>
   <section class="panel" id="p-pce"></section>
 
@@ -207,7 +208,7 @@ const DATA = {
       "jobs": "May 2026",
       "pce": "Apr 2026"
     },
-    "updated": "2026-06-10",
+    "updated": "2026-06-11",
     "note": "Auto-generated from FRED",
     "next": {
       "cpi": {
@@ -225,6 +226,10 @@ const DATA = {
       "fomc": {
         "d": "Jun 17 2026",
         "l": "FOMC decision"
+      },
+      "ppi": {
+        "d": "Jun 11 2026",
+        "l": "May PPI"
       }
     }
   },
@@ -244,9 +249,9 @@ const DATA = {
     },
     "walcl": 6.71,
     "tga": 0.88,
-    "rrp": 0.6,
-    "sofrIorb": -5,
-    "spx": 7387,
+    "rrp": 0.4,
+    "sofrIorb": -6,
+    "spx": 7267,
     "series": {
       "labels": [
         "Jun '16",
@@ -1888,8 +1893,8 @@ const DATA = {
     ],
     "alt": {
       "trimmedMean": 2.9,
-      "sticky": 3,
-      "flexible": 1.2,
+      "sticky": 3.1,
+      "flexible": 1.4,
       "median": 2.9
     },
     "tableA": {
@@ -2195,6 +2200,281 @@ const DATA = {
       ]
     }
   },
+  "ppi": {
+    "asof": "Apr 2026",
+    "headline": {
+      "yoy": 6,
+      "mom": 1.4,
+      "prevYoY": 4.3,
+      "consYoY": null,
+      "consMoM": null,
+      "ann3m": 11.1,
+      "ann6m": 8.2
+    },
+    "core": {
+      "yoy": 5.2,
+      "mom": 1,
+      "ann3m": 6.7,
+      "ann6m": 6.6
+    },
+    "coreXT": {
+      "yoy": 4.4,
+      "mom": 0.6
+    },
+    "goods": {
+      "yoy": 7.4,
+      "mom": 2
+    },
+    "services": {
+      "yoy": 5.5,
+      "mom": 1.2
+    },
+    "tableA": {
+      "months": [
+        "Feb '26",
+        "Mar '26",
+        "Apr '26"
+      ],
+      "rows": [
+        {
+          "k": "Final demand",
+          "tc": "最終需求",
+          "i": 0,
+          "yoy": 6,
+          "m": [
+            0.6,
+            0.7,
+            1.4
+          ]
+        },
+        {
+          "k": "Final demand goods",
+          "tc": "最終需求商品",
+          "i": 1,
+          "yoy": 7.4,
+          "m": [
+            1,
+            1.9,
+            2
+          ]
+        },
+        {
+          "k": "Foods",
+          "tc": "食品",
+          "i": 2,
+          "yoy": 2.2,
+          "m": [
+            2.3,
+            -0.6,
+            0.2
+          ]
+        },
+        {
+          "k": "Energy",
+          "tc": "能源",
+          "i": 2,
+          "yoy": 22.7,
+          "m": [
+            2.2,
+            10.1,
+            7.8
+          ]
+        },
+        {
+          "k": "Goods less foods & energy",
+          "tc": "商品（扣除食品能源）",
+          "i": 2,
+          "yoy": 4.6,
+          "m": [
+            0.3,
+            0.3,
+            0.7
+          ]
+        },
+        {
+          "k": "Final demand services",
+          "tc": "最終需求服務",
+          "i": 1,
+          "yoy": 5.5,
+          "m": [
+            0.4,
+            0.2,
+            1.2
+          ]
+        },
+        {
+          "k": "Trade services (margins)",
+          "tc": "貿易服務（利潤率）",
+          "i": 2,
+          "yoy": 8.1,
+          "m": [
+            -0.1,
+            0.3,
+            2.7
+          ]
+        },
+        {
+          "k": "Transportation & warehousing",
+          "tc": "運輸與倉儲",
+          "i": 2,
+          "yoy": 12.2,
+          "m": [
+            0.8,
+            1.8,
+            5
+          ]
+        },
+        {
+          "k": "Services less trade, transp. & whse.",
+          "tc": "服務（扣除貿易運輸倉儲）",
+          "i": 2,
+          "yoy": 3.6,
+          "m": [
+            0.6,
+            0,
+            0.1
+          ]
+        },
+        {
+          "k": "Final demand construction",
+          "tc": "最終需求營建",
+          "i": 1,
+          "yoy": 3.6,
+          "m": [
+            0.1,
+            0.1,
+            -0.1
+          ]
+        },
+        {
+          "k": "Less foods & energy (core)",
+          "tc": "核心（扣除食品能源）",
+          "i": 1,
+          "yoy": 5.2,
+          "m": [
+            0.4,
+            0.2,
+            1
+          ]
+        },
+        {
+          "k": "Less foods, energy & trade svcs",
+          "tc": "核心（扣除食品能源貿易）",
+          "i": 1,
+          "yoy": 4.4,
+          "m": [
+            0.5,
+            0.2,
+            0.6
+          ]
+        }
+      ]
+    },
+    "intermediate": {
+      "months": [
+        "Feb '26",
+        "Mar '26",
+        "Apr '26"
+      ],
+      "rows": [
+        {
+          "k": "Processed goods for intermediate demand",
+          "tc": "中間需求：加工品",
+          "i": 0,
+          "yoy": 9.4,
+          "m": [
+            1.5,
+            2.8,
+            2.7
+          ]
+        },
+        {
+          "k": "Unprocessed goods for intermediate demand",
+          "tc": "中間需求：未加工品",
+          "i": 0,
+          "yoy": 20.9,
+          "m": [
+            7.2,
+            1.8,
+            4.1
+          ]
+        },
+        {
+          "k": "Services for intermediate demand",
+          "tc": "中間需求：服務",
+          "i": 0,
+          "yoy": 4.4,
+          "m": [
+            0.4,
+            -0.1,
+            1.1
+          ]
+        }
+      ]
+    },
+    "series": {
+      "labels": [
+        "Nov '24",
+        "Dec '24",
+        "Jan '25",
+        "Feb '25",
+        "Mar '25",
+        "Apr '25",
+        "May '25",
+        "Jun '25",
+        "Jul '25",
+        "Aug '25",
+        "Sep '25",
+        "Oct '25",
+        "Nov '25",
+        "Dec '25",
+        "Jan '26",
+        "Feb '26",
+        "Mar '26",
+        "Apr '26"
+      ],
+      "headline": [
+        2.9,
+        3.5,
+        3.8,
+        3.4,
+        3.2,
+        2.4,
+        2.7,
+        2.4,
+        3.2,
+        2.7,
+        3,
+        2.8,
+        3.1,
+        3.1,
+        3.1,
+        3.4,
+        4.3,
+        6
+      ],
+      "core": [
+        3.6,
+        3.6,
+        3.5,
+        3.6,
+        3.5,
+        2.7,
+        2.7,
+        2.6,
+        2.9,
+        3,
+        3,
+        3.5,
+        3.6,
+        3.4,
+        3.5,
+        3.6,
+        3.7,
+        4.4
+      ]
+    }
+  },
   "jobs": {
     "nfp": {
       "actual": 172,
@@ -2459,7 +2739,7 @@ const I = {
   sub:{en:"CPI · Jobs · PCE",tc:"通膨 · 就業 · PCE"},
   gateTitle:{en:"Restricted research terminal",tc:"研究終端（受限存取）"},
   gateSub:{en:"Enter access key to continue.",tc:"請輸入存取金鑰以繼續。"},
-  tabs:{ overview:{en:"Overview",tc:"總覽"}, liq:{en:"Liquidity",tc:"流動性"}, cpi:{en:"CPI",tc:"CPI 物價"}, jobs:{en:"Jobs",tc:"就業市場"}, pce:{en:"PCE",tc:"PCE 消費"} },
+  tabs:{ overview:{en:"Overview",tc:"總覽"}, liq:{en:"Liquidity",tc:"流動性"}, cpi:{en:"CPI",tc:"CPI 物價"}, ppi:{en:"PPI",tc:"PPI 生產者物價"}, jobs:{en:"Jobs",tc:"就業市場"}, pce:{en:"PCE",tc:"PCE 消費"} },
   reg:{ inflation:{en:"Inflation",tc:"通膨"}, labor:{en:"Labor",tc:"就業"}, fed:{en:"Fed stance",tc:"聯準會立場"}, bias:{en:"Rate bias",tc:"利率傾向"} },
   updated:{en:"Updated",tc:"更新"}, vintage:{en:"Data vintage",tc:"數據截止"},
   actual:{en:"Actual",tc:"實際"}, prior:{en:"Prior",tc:"前值"}, cons:{en:"Cons.",tc:"預期"},
@@ -2518,7 +2798,7 @@ function renderChrome(){
   ].map(([k,v,c])=>'<div class="cell"><div class="lbl">'+t(k)+'</div><div class="val '+c+'">'+v+'</div></div>').join("");
 
   const tabsEl=document.getElementById("tabs");
-  const tabs=[["overview","p-overview"],["liq","p-liq"],["cpi","p-cpi"],["jobs","p-jobs"],["pce","p-pce"]];
+  const tabs=[["overview","p-overview"],["liq","p-liq"],["cpi","p-cpi"],["ppi","p-ppi"],["jobs","p-jobs"],["pce","p-pce"]];
   tabsEl.innerHTML = tabs.map(([k,id],i)=>'<button data-p="'+id+'" class="'+(i===0?"on":"")+'" onclick="switchTab(\''+id+'\')">'+t("tabs."+k)+'</button>').join("");
 
   document.getElementById("footer").innerHTML =
@@ -2554,6 +2834,7 @@ function renderOverview(){
     [L("Nonfarm payrolls","非農就業"),"nfp", j.nfp.actual, j.nfp.cons, "K","jobs"],
     [L("Unemployment","失業率"),"u3", j.unrate.actual, j.unrate.cons, "%","inflation"]
   ];
+  if(DATA.ppi&&DATA.ppi.headline.yoy!==null) rows.splice(2,0,["PPI "+t("yoy"),"headline",DATA.ppi.headline.yoy,DATA.ppi.headline.consYoY,"%","inflation"]);
   const scoreRows = rows.map(([nm,_,a,co,suf,dir])=>{
     const s=surprise(a,co,dir);
     const av=(suf==="K")?(a>0?"+"+a:a)+"K":a.toFixed(1)+"%";
@@ -2563,7 +2844,7 @@ function renderOverview(){
   }).join("");
 
   const cal=DATA.meta.next;
-  const calHtml=[["jobs",cal.jobs],["cpi",cal.cpi],["pce",cal.pce],["fomc",cal.fomc]].map(([k,e])=>
+  const calHtml=[["jobs",cal.jobs],["cpi",cal.cpi],["ppi",cal.ppi],["pce",cal.pce],["fomc",cal.fomc]].filter(([k,e])=>e).map(([k,e])=>
     '<div class="ev"><div class="nm">'+e.l+'</div><div class="dt">'+e.d+'</div></div>').join("");
 
   const el=document.getElementById("p-overview");
@@ -2684,6 +2965,56 @@ function renderCPI(){
     +'<div class="note" style="margin-top:14px">'+L("<b>Read:</b> headline 3.8% is energy-led (gasoline +28.4% YoY), but core goods are flat and trimmed-mean runs cooler — the Fed will weigh the sticky services pass-through (airfares) more than the headline.","<b>解讀：</b>整體 3.8% 由能源主導（汽油年增 +28.4%），但核心商品持平、截尾平均較低——聯準會更看重黏性服務的傳導（機票）而非整體數字。")+'</div>';
 }
 
+/* ---------- PPI ---------- */
+function renderPPI(){
+  const p=DATA.ppi;
+  const el=document.getElementById("p-ppi");
+  if(!p){ el.innerHTML='<div class="note">'+L("PPI populates from FRED on the next pipeline run.","PPI 將於下次管線執行時由 FRED 填入。")+'</div>'; return; }
+  const hsur=surprise(p.headline.yoy,p.headline.consYoY,"inflation");
+
+  const kpis='<div class="grid g4">'
+    + kpi(L("Final demand","最終需求"),"PPI YoY",
+        pct(p.headline.yoy)+' <span class="pill '+hsur.cls+'">'+hsur.txt+'</span>',
+        kitem(t("mom"),signed(p.headline.mom,"%"))+kitem(t("prior")+" "+t("yoy"),pct(p.headline.prevYoY))+kitem(t("cons")+" "+t("yoy"),pct(p.headline.consYoY)))
+    + kpi(L("Core PPI","核心 PPI"),"ex food & energy",
+        pct(p.core.yoy),
+        kitem(t("mom"),signed(p.core.mom,"%"))+kitem(t("ann3"), p.core.ann3m===null?NA:signed(p.core.ann3m,"%"))+kitem(t("ann6"), p.core.ann6m===null?NA:signed(p.core.ann6m,"%")))
+    + kpi(L("Ex food, energy & trade","扣除食品能源貿易"),"Fed-watched",
+        pct(p.coreXT.yoy),
+        kitem(t("mom"),signed(p.coreXT.mom,"%")))
+    + kpi(L("Goods / Services","商品／服務"),"FD split",
+        pct(p.goods.yoy),
+        kitem(L("Goods","商品")+" "+t("mom"),signed(p.goods.mom,"%"))+kitem(L("Services","服務")+" "+t("yoy"),pct(p.services.yoy))+kitem(L("Services","服務")+" "+t("mom"),signed(p.services.mom,"%")))
+    +'</div>';
+
+  const bTable=(ta)=>{
+    const head='<tr><th style="text-align:left">'+L("Category","類別")+'</th>'
+      + ta.months.map(m=>'<th>'+m+'</th>').join("")+'<th>'+L("12-mo","12個月")+'</th></tr>';
+    const cell=v=>v===null?'<td class="num">–</td>':'<td class="num'+(v<0?' ta-neg':'')+'">'+v.toFixed(1)+'</td>';
+    const rows=ta.rows.map(r=>
+      '<tr'+(r.i<1?' class="ta-agg"':'')+'><td class="name ta-i'+r.i+'">'+(LANG==="tc"?r.tc:r.k)+'</td>'
+      + r.m.map(cell).join("") + cell(r.yoy) + '</tr>').join("");
+    return '<div class="ta-wrap"><table><thead>'+head+'</thead><tbody>'+rows+'</tbody></table></div>';
+  };
+
+  el.innerHTML =
+    '<h2 class="sec">'+L("Headline figures","頭條數據")+' <span class="tag">'+(p.asof||"")+'</span></h2>'+kpis
+    +'<h2 class="sec">'+L("Final demand breakdown","最終需求分項")+' <span class="tag">BLS Table A</span></h2>'
+    +bTable(p.tableA)
+    +'<div class="note" style="margin-top:10px;font-size:11px">'
+    + L("Monthly columns: seasonally adjusted MoM %. 12-mo column: NSA YoY % (BLS convention). Trade indexes measure wholesaler/retailer margins. PPI is revised for 4 months after first publication.",
+        "月度欄：季調後月變動 %。12個月欄：未季調年增率 %（BLS 慣例）。貿易指數衡量批發零售商利潤率。PPI 於首次發布後 4 個月內可修正。")+'</div>'
+    +'<h2 class="sec">'+L("Intermediate demand","中間需求")+' <span class="tag">pipeline pressure</span></h2>'
+    +bTable(p.intermediate)
+    +'<div class="note" style="margin-top:10px;font-size:11px">'
+    + L("Intermediate demand tracks business input costs — upstream pressure that typically leads final demand and, with a lag, CPI.",
+        "中間需求追蹤企業投入成本——上游壓力通常領先最終需求，並滯後傳導至 CPI。")+'</div>'
+    +'<h2 class="sec">'+L("Trend","趨勢")+'</h2>'
+    +'<div class="chartbox"><div class="ch-title">'+L("Final demand vs ex food/energy/trade, YoY %","最終需求 vs 核心（扣除食品能源貿易）年增 %")+'</div>'
+    +'<div class="ch-note">'+L("Producer prices lead consumer prices; the gap to CPI gauges margin compression vs pass-through ahead.","生產者物價領先消費者物價；與 CPI 的差距衡量利潤壓縮 vs 後續轉嫁。")+'</div>'
+    +'<div class="cwrap" style="height:260px"><canvas id="ch-ppi" role="img" aria-label="Line chart of PPI final demand and core year-over-year"></canvas></div></div>';
+}
+
 /* ---------- JOBS ---------- */
 function renderJobs(){
   const j=DATA.jobs;
@@ -2788,7 +3119,7 @@ function renderPCE(){
 
 function renderAll(){
   renderChrome();
-  renderOverview(); renderLiquidity(); renderCPI(); renderJobs(); renderPCE();
+  renderOverview(); renderLiquidity(); renderCPI(); renderPPI(); renderJobs(); renderPCE();
   switchTab(CURRENT);
 }
 
@@ -2835,6 +3166,15 @@ function drawCharts(panelId){
       {label:"Headline",data:c.series.headline,borderColor:"#f5a623",backgroundColor:"#f5a623",tension:.25,borderWidth:2,pointRadius:3},
       {label:"Core",data:c.series.core,borderColor:"#58a6ff",backgroundColor:"#58a6ff",borderDash:[5,4],tension:.25,borderWidth:2,pointRadius:3}
     ]},options:baseLine()});
+  }
+  if(panelId==="p-ppi"){
+    const pp=DATA.ppi;
+    if(pp&&pp.series){
+      mk("ch-ppi",{type:"line",data:{labels:pp.series.labels,datasets:[
+        {label:L("Final demand","最終需求"),data:pp.series.headline,borderColor:"#f5a623",backgroundColor:"#f5a623",tension:.25,borderWidth:2,pointRadius:3},
+        {label:L("Ex food/energy/trade","核心"),data:pp.series.core,borderColor:"#58a6ff",backgroundColor:"#58a6ff",borderDash:[5,4],tension:.25,borderWidth:2,pointRadius:3}
+      ]},options:baseLine()});
+    }
   }
   if(panelId==="p-pce"){
     const p=DATA.pce, n=p.series.labels.length;
