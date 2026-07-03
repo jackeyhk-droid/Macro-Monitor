@@ -82,18 +82,34 @@ const S = {
 
 const api = id => `https://api.stlouisfed.org/fred/series/observations?series_id=${id}&api_key=${KEY}&file_type=json&observation_start=${HISTORY_START}`;
 async function obs(id) {
-  const r = await fetch(api(id));
-  if (!r.ok) throw new Error(`FRED ${id} -> ${r.status}`);
-  const j = await r.json();
-  return (j.observations || []).filter(o => o.value !== "." && o.value !== "").map(o => ({ d: o.date, v: +o.value }));
+  // retry transient failures (429 rate-limit, 5xx, network) with backoff; 400 = bad ID, no retry
+  const waits = [0, 1500, 4000, 9000];
+  let lastErr;
+  for (let i = 0; i < waits.length; i++) {
+    if (waits[i]) await new Promise(r => setTimeout(r, waits[i]));
+    try {
+      const r = await fetch(api(id));
+      if (r.ok) {
+        const j = await r.json();
+        return (j.observations || []).filter(o => o.value !== "." && o.value !== "").map(o => ({ d: o.date, v: +o.value }));
+      }
+      if (r.status === 400) throw new Error(`FRED ${id} -> 400 (bad series id)`);
+      lastErr = new Error(`FRED ${id} -> ${r.status}`);
+      if (r.status !== 429 && r.status < 500) throw lastErr;
+    } catch (e) {
+      if (String(e.message).includes("400")) throw e;
+      lastErr = e;
+    }
+  }
+  throw lastErr;
 }
 const r1 = x => (x == null || Number.isNaN(x)) ? null : Math.round(x * 10) / 10;
 const r2 = x => (x == null || Number.isNaN(x)) ? null : Math.round(x * 100) / 100;
 const yoy = a => { if (a.length < 2) return null; const L = a.at(-1); const b = at(a, addMonths(L.d, 12)); return b ? r1((L.v / b.v - 1) * 100) : (a.length > 12 ? r1((L.v / a.at(-13).v - 1) * 100) : null); };
 const mom = a => { if (a.length < 2) return null; const L = a.at(-1); const b = at(a, addMonths(L.d, 1)) || a.at(-2); return b ? r1((L.v / b.v - 1) * 100) : null; };
 const ann = (a, m) => { if (a.length <= m) return null; const L = a.at(-1); const b = at(a, addMonths(L.d, m)) || a.at(-1 - m); return b ? r1((Math.pow(L.v / b.v, 12 / m) - 1) * 100) : null; };
-const addMonths = (d, n) => { let [y, m] = d.split("-").map(Number); m -= n; while (m <= 0) { m += 12; y--; } return `${y}-${String(m).padStart(2, "0")}-01`; };
-const at = (a, d) => a.find(o => o.d === d) || null;
+const addMonths = (d, n) => { if (!d) return null; let [y, m] = d.split("-").map(Number); m -= n; while (m <= 0) { m += 12; y--; } return `${y}-${String(m).padStart(2, "0")}-01`; };
+const at = (a, d) => d ? (a.find(o => o.d === d) || null) : null;
 const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 const fmtMon = d => { const [y, m] = d.split("-"); return `${MON[+m - 1]} '${y.slice(2)}`; };
 const readJSON = p => { try { return existsSync(p) ? JSON.parse(readFileSync(p, "utf8")) : null; } catch { return null; } };
@@ -105,6 +121,18 @@ async function main() {
   for (const id of need) {
     try { raw[id] = await obs(id); } catch (e) { console.warn("skip", id, e.message); raw[id] = []; }
     await new Promise(r => setTimeout(r, 650)); // ~115 series: stay well under FRED 120/min
+  }
+  // If the anchor series came back empty, FRED is unreachable or the key was rejected —
+  // stop with a clear message and leave the last good index.html untouched.
+  const anchors = ["CPIAUCSL", "PAYEMS", "WALCL", "PPIFIS", "PCEPI"];
+  const dead = anchors.filter(id => !(raw[id] && raw[id].length));
+  if (dead.length) {
+    console.error(`FATAL: FRED returned no data for anchor series ${dead.join(", ")} after retries \u2014 network block, outage, or rejected key. index.html left untouched.`);
+    process.exit(1);
+  }
+  if (!existsSync(HTML)) {
+    console.error(`FATAL: ${HTML} not found at the repo root \u2014 nothing to bake into.`);
+    process.exit(1);
   }
   const get = k => raw[S[k][0]] || [];
   const last = k => get(k).at(-1)?.v ?? null;
