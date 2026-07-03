@@ -24,7 +24,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "24"
       - name: Bake FRED data into the dashboard
         env:
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
@@ -38,5 +38,12 @@ jobs:
             echo "No data change — nothing to commit."
           else
             git commit -m "data: refresh macro snapshot"
-            git push
+            # Remote may have moved (e.g. several quick uploads queued several runs):
+            # rebase our data commit on top; if that conflicts, skip — the next run rebakes.
+            if git pull --rebase origin main; then
+              git push
+            else
+              git rebase --abort
+              echo "Remote moved with conflicting changes — skipping this push; next run will rebake on the latest tree."
+            fi
           fi
