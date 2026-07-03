@@ -1,49 +1,53 @@
 {
   "regime": {
     "inflation": "Re-accelerating (energy/war)",
-    "labor": "Solid but narrow",
+    "labor": "Cooling · WC-distorted",
     "fed": "On hold · restrictive",
-    "bias": "Hike-risk skew · no 2026 cuts priced"
+    "bias": "Hike odds fading · on hold through summer"
   },
   "next": {
     "cpi": {
-      "d": "Jun 11 2026",
-      "l": "May CPI"
-    },
-    "jobs": {
-      "d": "Jul 02 2026",
-      "l": "Jun jobs"
-    },
-    "pce": {
-      "d": "Jun 25 2026",
-      "l": "May PCE"
-    },
-    "fomc": {
-      "d": "Jun 17 2026",
-      "l": "FOMC decision"
+      "d": "Jul 14 2026",
+      "l": "Jun CPI"
     },
     "ppi": {
-      "d": "Jun 11 2026",
-      "l": "May PPI"
+      "d": "Jul 15 2026",
+      "l": "Jun PPI"
+    },
+    "fomc": {
+      "d": "Jul 29 2026",
+      "l": "FOMC decision"
+    },
+    "pce": {
+      "d": "Jul 30 2026",
+      "l": "Jun PCE"
+    },
+    "jobs": {
+      "d": "Aug 7 2026",
+      "l": "Jul jobs"
     }
   },
   "revisions": [
     {
-      "m": "Mar '26",
-      "i": 185,
-      "r": 214
+      "m": "Apr '26",
+      "i": 179,
+      "r": 148
     },
     {
-      "m": "Apr '26",
-      "i": 115,
-      "r": 179
+      "m": "May '26",
+      "i": 172,
+      "r": 129
     }
   ],
   "worldCupTrend": 14,
   "gdpQuarter": "Q1 '26",
   "realWages": {
-    "yoy": -0.3,
-    "mom": -0.5
+    "yoy": -0.8,
+    "mom": -0.2
   },
-  "diffusion": null
+  "diffusion": null,
+  "worldCupNote": {
+    "en": "",
+    "tc": ""
+  }
 }

@@ -288,7 +288,7 @@ async function main() {
       jolts: { asof: ym("joOpen"), openings: r1(last("joOpen") / 1000), hires: r1(last("joHires") / 1000),
                quits: r1(last("joQuits") / 1000), quitsRate: last("joQuitsRate"), separations: r1(last("joSep") / 1000) },
       sectors,
-      worldCup: { lhTotal: lh, lhTrend: M.worldCupTrend ?? 14, exLH: nfp != null ? nfp - lh : null },
+      worldCup: { lhTotal: lh, lhTrend: M.worldCupTrend ?? 14, exLH: nfp != null ? nfp - lh : null, note: (M.worldCupNote && (M.worldCupNote.en || M.worldCupNote.tc)) ? M.worldCupNote : null },
       series: tailSingle(pay, 6)
     },
     pce: {
