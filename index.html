@@ -212,32 +212,32 @@ const DATA = {
     "note": "Auto-generated from FRED",
     "next": {
       "cpi": {
-        "d": "Jun 11 2026",
-        "l": "May CPI"
-      },
-      "jobs": {
-        "d": "Jul 02 2026",
-        "l": "Jun jobs"
-      },
-      "pce": {
-        "d": "Jun 25 2026",
-        "l": "May PCE"
-      },
-      "fomc": {
-        "d": "Jun 17 2026",
-        "l": "FOMC decision"
+        "d": "Jul 14 2026",
+        "l": "Jun CPI"
       },
       "ppi": {
-        "d": "Jun 11 2026",
-        "l": "May PPI"
+        "d": "Jul 15 2026",
+        "l": "Jun PPI"
+      },
+      "fomc": {
+        "d": "Jul 29 2026",
+        "l": "FOMC decision"
+      },
+      "pce": {
+        "d": "Jul 30 2026",
+        "l": "Jun PCE"
+      },
+      "jobs": {
+        "d": "Aug 7 2026",
+        "l": "Jul jobs"
       }
     }
   },
   "regime": {
     "inflation": "Re-accelerating (energy/war)",
-    "labor": "Solid but narrow",
+    "labor": "Cooling · WC-distorted",
     "fed": "On hold · restrictive",
-    "bias": "Hike-risk skew · no 2026 cuts priced"
+    "bias": "Hike odds fading · on hold through summer"
   },
   "nl": {
     "tn": 5.84,
@@ -1851,8 +1851,8 @@ const DATA = {
       "mom": 0
     },
     "realWages": {
-      "yoy": -0.3,
-      "mom": -0.5
+      "yoy": -0.8,
+      "mom": -0.2
     },
     "components": [
       {
@@ -2479,7 +2479,7 @@ const DATA = {
     "nfp": {
       "actual": 57,
       "prior": 129,
-      "cons": 85,
+      "cons": 115,
       "ann3m": 111
     },
     "unrate": {
@@ -2510,14 +2510,14 @@ const DATA = {
     },
     "revisions": [
       {
-        "m": "Mar '26",
-        "i": 185,
-        "r": 214
+        "m": "Apr '26",
+        "i": 179,
+        "r": 148
       },
       {
-        "m": "Apr '26",
-        "i": 115,
-        "r": 179
+        "m": "May '26",
+        "i": 172,
+        "r": 129
       }
     ],
     "jolts": {
@@ -2593,7 +2593,8 @@ const DATA = {
     "worldCup": {
       "lhTotal": -61,
       "lhTrend": 14,
-      "exLH": 118
+      "exLH": 118,
+      "note": null
     },
     "series": {
       "labels": [
@@ -3036,10 +3037,46 @@ function renderJobs(){
     +'</div>';
 
   const wc=j.worldCup;
-  const wcNote='<div class="note"><b>'+L("World Cup distortion","世界盃扭曲")+'.</b> '
-    + L("Leisure & hospitality added <b>"+wc.lhTotal+"K</b> vs a ~"+wc.lhTrend+"K trend — pre-tournament hiring (BofA's \u201cWorld Cup fever\u201d). Ex-L&H, payrolls were still <b>+"+wc.exLH+"K</b>, a beat, so the labor market isn't secretly weak. Expect Jun/Jul prints to run hotter (tournament Jun 11–Jul 19) and an H2 give-back as temp roles roll off — don't extrapolate the 3-month trend.",
-        "休閒與酒店業增加 <b>"+wc.lhTotal+"K</b>，對比約 "+wc.lhTrend+"K 的趨勢——賽前招聘（美銀稱「世界盃熱」）。剔除休閒業後非農仍 <b>+"+wc.exLH+"K</b>、超預期，故就業市場並非暗弱。預期 6–7 月數據更熱（賽事 6/11–7/19），下半年隨臨時職位退場而回吐——勿外推 3 個月趨勢。")
-    +'</div>';
+  // World Cup note — phase-aware (pre / during / post the Jun 11–Jul 19 tournament),
+  // keyed to the jobs reference month; manual.json worldCupNote overrides when set;
+  // hides itself after Oct 2026 when the distortion has washed out.
+  const wcNote=(function(){
+    if(wc.note&&(wc.note.en||wc.note.tc)) return '<div class="note"><b>'+L("World Cup distortion.","世界盃扭曲。")+'</b> '+L(wc.note.en||wc.note.tc,wc.note.tc||wc.note.en)+'</div>';
+    const MI={Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11};
+    const pr=(DATA.meta.asof.jobs||"").split(" ");
+    const cur=(pr.length===2&&MI[pr[0]]!==undefined)?(+pr[1])*12+MI[pr[0]]:null;
+    const JUN=2026*12+5, JUL=JUN+1, OCT=2026*12+9;
+    if(cur===null||cur>OCT) return "";
+    const lh=wc.lhTotal, tr=wc.lhTrend, ex=wc.exLH, sg=v=>(v>0?"+":"")+v;
+    const exEn = ex===null?"" : ex>=100?" Ex-L&H, payrolls rose <b>+"+ex+"K</b> — hiring outside the sector held up."
+      : ex>=50?" Ex-L&H, payrolls rose <b>+"+ex+"K</b> — moderating but positive."
+      : ex>=0?" Ex-L&H, payrolls rose just <b>+"+ex+"K</b> — the softness extends beyond the World Cup."
+      :" Ex-L&H, payrolls fell <b>"+ex+"K</b> — the weakness extends well beyond the World Cup.";
+    const exTc = ex===null?"" : ex>=100?"扣除 L&H 後就業仍增 <b>+"+ex+"K</b>——其他行業招聘尚穩。"
+      : ex>=50?"扣除 L&H 後增 <b>+"+ex+"K</b>——放緩但仍正向。"
+      : ex>=0?"扣除 L&H 後僅增 <b>+"+ex+"K</b>——疲軟不止於世界盃因素。"
+      :"扣除 L&H 後減少 <b>"+ex+"K</b>——疲軟遠超世界盃因素。";
+    let en,tc;
+    if(cur<JUN){
+      en="Leisure & hospitality added <b>"+sg(lh)+"K</b> vs a ~"+tr+"K trend — pre-tournament hiring (BofA's \u201cWorld Cup fever\u201d)."+exEn+" Expect noisy Jun/Jul prints (tournament Jun 11–Jul 19) and an H2 give-back as temp roles roll off — don't extrapolate the 3-month trend.";
+      tc="休閒與酒店業增加 <b>"+sg(lh)+"K</b>（趨勢約 "+tr+"K）——賽前提前招聘（美銀稱「世界盃熱」）。"+exTc+"預期 6–7 月數據受干擾（賽事 6/11–7/19），下半年臨時職位退場將回吐——勿外推 3 個月趨勢。";
+    } else if(cur<=JUL){
+      if(lh<tr-10){
+        en="The distortion has flipped sign: L&H swung to <b>"+lh+"K</b> vs a ~"+tr+"K trend even with the tournament running (Jun 11–Jul 19) — BLS flags weaker-than-usual seasonal hiring, i.e. the spring pull-forward is now being given back through seasonal adjustment."+exEn+" Expect continued noise through the Jul–Aug prints; judge the trend ex-L&H, not on the headline.";
+        tc="扭曲方向已反轉：賽事進行中（6/11–7/19），L&H 轉為 <b>"+lh+"K</b>（趨勢約 "+tr+"K）——BLS 指季節性招聘弱於往常，即春季提前招聘正透過季調回吐。"+exTc+"7–8 月數據仍將受干擾；以扣除 L&H 的趨勢判斷勞動市場，勿只看頭條。";
+      } else if(lh>tr+10){
+        en="L&H added <b>+"+lh+"K</b> vs a ~"+tr+"K trend with the tournament underway (Jun 11–Jul 19) — a temporary boost."+exEn+" Expect an H2 give-back as temp roles roll off — don't extrapolate.";
+        tc="賽事進行中（6/11–7/19），L&H 增加 <b>+"+lh+"K</b>（趨勢約 "+tr+"K）——屬暫時性提振。"+exTc+"下半年臨時職位退場將回吐——勿外推。";
+      } else {
+        en="L&H printed <b>"+sg(lh)+"K</b>, near its ~"+tr+"K trend, with the tournament underway (Jun 11–Jul 19) — pull-forward and tournament boost roughly offsetting."+exEn;
+        tc="賽事進行中（6/11–7/19），L&H 為 <b>"+sg(lh)+"K</b>、接近約 "+tr+"K 趨勢——提前招聘與賽事提振大致相抵。"+exTc;
+      }
+    } else {
+      en="Tournament ended Jul 19; L&H printed <b>"+sg(lh)+"K</b> vs a ~"+tr+"K trend as temp roles roll off."+exEn+" The distortion washes out of the 3-month trend by late autumn.";
+      tc="賽事已於 7/19 結束；L&H 為 <b>"+sg(lh)+"K</b>（趨勢約 "+tr+"K），臨時職位陸續退場。"+exTc+"扭曲將於秋末自 3 個月趨勢中淡出。";
+    }
+    return '<div class="note"><b>'+L("World Cup distortion.","世界盃扭曲。")+'</b> '+L(en,tc)+'</div>';
+  })();
 
   const rev=j.revisions.map(x=>{
     const d=x.r-x.i;
