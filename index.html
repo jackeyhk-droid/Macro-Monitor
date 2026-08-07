@@ -205,10 +205,10 @@ const DATA = {
   "meta": {
     "asof": {
       "cpi": "Jun 2026",
-      "jobs": "Jun 2026",
+      "jobs": "Jul 2026",
       "pce": "Jun 2026"
     },
-    "updated": "2026-08-06",
+    "updated": "2026-08-07",
     "note": "Auto-generated from FRED",
     "next": {
       "cpi": {
@@ -240,25 +240,24 @@ const DATA = {
     "bias": "Hike odds fading · on hold through summer"
   },
   "nl": {
-    "tn": 5.82,
-    "value": 5824.8,
+    "tn": 5.84,
+    "value": 5839.6,
     "zone": {
       "k": "am",
       "en": "Uncomfortable",
       "tc": "偏緊"
     },
-    "walcl": 6.74,
+    "walcl": 6.75,
     "tga": 0.91,
-    "rrp": 1.7,
-    "sofrIorb": -1,
-    "spx": 7724,
+    "rrp": 1.4,
+    "sofrIorb": 0,
+    "spx": 7710,
     "series": {
       "labels": [
         "Aug '16",
         "Aug '16",
         "Aug '16",
         "Aug '16",
-        "Aug '16",
         "Sep '16",
         "Sep '16",
         "Sep '16",
@@ -775,10 +774,10 @@ const DATA = {
         "Jul '26",
         "Jul '26",
         "Jul '26",
-        "Jul '26"
+        "Jul '26",
+        "Aug '26"
       ],
       "nl": [
-        4.1,
         4.13,
         4.12,
         4.12,
@@ -1299,10 +1298,10 @@ const DATA = {
         5.96,
         5.99,
         5.92,
-        5.82
+        5.82,
+        5.84
       ],
       "spx": [
-        null,
         2175,
         2182,
         2175,
@@ -1823,7 +1822,8 @@ const DATA = {
         7483,
         7572,
         7499,
-        7316
+        7316,
+        7724
       ]
     }
   },
@@ -2477,35 +2477,35 @@ const DATA = {
   },
   "jobs": {
     "nfp": {
-      "actual": 57,
-      "prior": 129,
+      "actual": -23,
+      "prior": 20,
       "cons": 115,
-      "ann3m": 111
+      "ann3m": 20
     },
     "unrate": {
-      "actual": 4.2,
-      "prior": 4.3,
+      "actual": 4.1,
+      "prior": 4.2,
       "cons": 4.3
     },
     "u6": {
       "actual": 7.9
     },
     "ahe": {
-      "yoy": 3.5,
-      "mom": 0.3,
-      "level": 37.64
+      "yoy": 3.2,
+      "mom": 0.1,
+      "level": 37.62
     },
     "partic": {
-      "actual": 61.5
+      "actual": 61.4
     },
     "epop": {
-      "actual": 59
+      "actual": 58.9
     },
     "diffusion": {
       "actual": null
     },
     "sahm": {
-      "actual": 0.07,
+      "actual": -0.03,
       "trigger": 0.5
     },
     "revisions": [
@@ -2530,16 +2530,6 @@ const DATA = {
     },
     "sectors": [
       {
-        "k": "Prof. & business svcs",
-        "tc": "專業與商業服務",
-        "v": 36
-      },
-      {
-        "k": "Social assistance",
-        "tc": "社會援助",
-        "v": 25
-      },
-      {
         "k": "Health care",
         "tc": "醫療保健",
         "v": 22
@@ -2547,71 +2537,81 @@ const DATA = {
       {
         "k": "Construction",
         "tc": "營建",
-        "v": 11
+        "v": 22
       },
       {
-        "k": "Manufacturing",
-        "tc": "製造業",
-        "v": 3
-      },
-      {
-        "k": "Local government",
-        "tc": "地方政府",
-        "v": 2
-      },
-      {
-        "k": "Transport & warehousing",
-        "tc": "運輸與倉儲",
-        "v": 2
-      },
-      {
-        "k": "Financial activities",
-        "tc": "金融活動",
-        "v": 0
-      },
-      {
-        "k": "Mining & logging",
-        "tc": "採礦與伐木",
-        "v": -4
-      },
-      {
-        "k": "Retail trade",
-        "tc": "零售",
-        "v": -7
+        "k": "Prof. & business svcs",
+        "tc": "專業與商業服務",
+        "v": 18
       },
       {
         "k": "Information",
         "tc": "資訊",
-        "v": -9
+        "v": 11
+      },
+      {
+        "k": "Transport & warehousing",
+        "tc": "運輸與倉儲",
+        "v": 10
+      },
+      {
+        "k": "Manufacturing",
+        "tc": "製造業",
+        "v": 5
+      },
+      {
+        "k": "Social assistance",
+        "tc": "社會援助",
+        "v": 1
+      },
+      {
+        "k": "Mining & logging",
+        "tc": "採礦與伐木",
+        "v": -2
+      },
+      {
+        "k": "Financial activities",
+        "tc": "金融活動",
+        "v": -14
+      },
+      {
+        "k": "Retail trade",
+        "tc": "零售",
+        "v": -19
       },
       {
         "k": "Leisure & hospitality",
         "tc": "休閒與酒店",
-        "v": -61
+        "v": -40
+      },
+      {
+        "k": "Local government",
+        "tc": "地方政府",
+        "v": -57
       }
     ],
     "worldCup": {
-      "lhTotal": -61,
+      "lhTotal": -40,
       "lhTrend": 14,
-      "exLH": 118,
+      "exLH": 17,
       "note": null
     },
     "series": {
       "labels": [
-        "Jan '26",
         "Feb '26",
         "Mar '26",
         "Apr '26",
         "May '26",
-        "Jun '26"
+        "Jun '26",
+        "Jul '26"
       ],
       "nfp": [
-        160,
         -156,
         214,
         148,
-        129,
-        57
+        63,
+        20,
+        -23
       ]
     }
   },
