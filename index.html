@@ -204,11 +204,11 @@ document.getElementById("g-input").addEventListener("keydown", e=>{ if(e.key==="
 const DATA = {
   "meta": {
     "asof": {
-      "cpi": "Jul 2026",
+      "cpi": "Aug 2026",
       "jobs": "Aug 2026",
       "pce": "Jul 2026"
     },
-    "updated": "2026-09-10",
+    "updated": "2026-09-11",
     "note": "Auto-generated from FRED",
     "next": {
       "cpi": {
@@ -240,24 +240,23 @@ const DATA = {
     "bias": "Hike odds fading · on hold through summer"
   },
   "nl": {
-    "tn": 5.77,
-    "value": 5768.7,
+    "tn": 5.86,
+    "value": 5856.9,
     "zone": {
       "k": "am",
       "en": "Uncomfortable",
       "tc": "偏緊"
     },
     "walcl": 6.74,
-    "tga": 0.97,
-    "rrp": 0.4,
-    "sofrIorb": -1,
-    "spx": 7636,
+    "tga": 0.88,
+    "rrp": 4.7,
+    "sofrIorb": -3,
+    "spx": 7592,
     "series": {
       "labels": [
         "Sep '16",
         "Sep '16",
         "Sep '16",
-        "Sep '16",
         "Oct '16",
         "Oct '16",
         "Oct '16",
@@ -775,10 +774,10 @@ const DATA = {
         "Aug '26",
         "Aug '26",
         "Aug '26",
+        "Sep '26",
         "Sep '26"
       ],
       "nl": [
-        4.14,
         4.17,
         3.96,
         3.83,
@@ -1299,10 +1298,10 @@ const DATA = {
         5.8,
         5.79,
         5.78,
-        5.77
+        5.77,
+        5.86
       ],
       "spx": [
-        null,
         2126,
         2163,
         2171,
@@ -1823,31 +1822,32 @@ const DATA = {
         7749,
         7708,
         7676,
-        7667
+        7667,
+        7636
       ]
     }
   },
   "cpi": {
     "headline": {
       "yoy": 3.4,
-      "mom": 0.1,
-      "prevYoY": 3.5,
+      "mom": 0.4,
+      "prevYoY": 3.4,
       "consYoY": 3.7,
       "consMoM": 0.6,
-      "ann3m": 0.5,
-      "ann6m": 3.8
+      "ann3m": 0.2,
+      "ann6m": 4.1
     },
     "core": {
-      "yoy": 2.5,
-      "mom": 0.2,
-      "prevYoY": 2.6,
+      "yoy": 2.4,
+      "mom": 0.3,
+      "prevYoY": 2.5,
       "consYoY": 2.7,
       "consMoM": 0.3,
-      "ann3m": 1.6,
-      "ann6m": 2.4
+      "ann3m": 2,
+      "ann6m": 2.6
     },
     "supercore": {
-      "yoy": -0.2,
+      "yoy": 0,
       "mom": 0.1
     },
     "realWages": {
@@ -1858,36 +1858,36 @@ const DATA = {
       {
         "k": "Shelter",
         "tc": "居住",
-        "yoy": 3.2,
-        "mom": 0.1,
+        "yoy": 3,
+        "mom": 0.3,
         "n": ""
       },
       {
         "k": "Energy",
         "tc": "能源",
-        "yoy": 14.7,
-        "mom": -1.5,
+        "yoy": 16.3,
+        "mom": 2.1,
         "n": ""
       },
       {
         "k": "Food",
         "tc": "食品",
-        "yoy": 3,
+        "yoy": 2.7,
         "mom": 0.1,
         "n": ""
       },
       {
         "k": "Core goods",
         "tc": "核心商品",
-        "yoy": 0.8,
-        "mom": 0.2,
+        "yoy": 0.7,
+        "mom": 0.1,
         "n": ""
       },
       {
         "k": "Core services",
         "tc": "核心服務",
         "yoy": 3,
-        "mom": 0.2,
+        "mom": 0.3,
         "n": ""
       }
     ],
@@ -1895,13 +1895,13 @@ const DATA = {
       "trimmedMean": 2.6,
       "sticky": 2.7,
       "flexible": 1.1,
-      "median": 2.7
+      "median": 2.6
     },
     "tableA": {
       "months": [
-        "May '26",
         "Jun '26",
-        "Jul '26"
+        "Jul '26",
+        "Aug '26"
       ],
       "rows": [
         {
@@ -1910,19 +1910,19 @@ const DATA = {
           "i": 0,
           "yoy": 3.4,
           "m": [
-            0.5,
             -0.4,
-            0.1
+            0.1,
+            0.4
           ]
         },
         {
           "k": "Food",
           "tc": "食品",
           "i": 1,
-          "yoy": 3,
+          "yoy": 2.7,
           "m": [
             0.2,
-            0.2,
+            0.1,
             0.1
           ]
         },
@@ -1930,11 +1930,11 @@ const DATA = {
           "k": "Food at home",
           "tc": "居家食品",
           "i": 2,
-          "yoy": 2.7,
+          "yoy": 2.2,
           "m": [
-            0.1,
             0.2,
-            -0.1
+            -0.1,
+            0
           ]
         },
         {
@@ -1943,8 +1943,8 @@ const DATA = {
           "i": 2,
           "yoy": 3.4,
           "m": [
-            0.3,
             0.2,
+            0.3,
             0.3
           ]
         },
@@ -1952,120 +1952,120 @@ const DATA = {
           "k": "Energy",
           "tc": "能源",
           "i": 1,
-          "yoy": 14.7,
+          "yoy": 16.3,
           "m": [
-            3.9,
             -5.7,
-            -1.5
+            -1.5,
+            2.1
           ]
         },
         {
           "k": "Energy commodities",
           "tc": "能源商品",
           "i": 2,
-          "yoy": 24.7,
+          "yoy": 28,
           "m": [
-            6.7,
             -9.5,
-            -2.9
+            -2.9,
+            4.2
           ]
         },
         {
           "k": "Gasoline (all types)",
           "tc": "汽油（全類型）",
           "i": 3,
-          "yoy": 24.6,
+          "yoy": 27.4,
           "m": [
-            7,
             -9.7,
-            -2.9
+            -2.9,
+            3.9
           ]
         },
         {
           "k": "Fuel oil & other fuels",
           "tc": "燃油及其他燃料",
           "i": 3,
-          "yoy": 22.4,
+          "yoy": 30.2,
           "m": [
-            3.3,
             -6.6,
-            -0.8
+            -0.8,
+            6.8
           ]
         },
         {
           "k": "Energy services",
           "tc": "能源服務",
           "i": 2,
-          "yoy": 4.3,
+          "yoy": 4,
           "m": [
-            0.4,
             -0.7,
-            0.3
+            0.3,
+            -0.4
           ]
         },
         {
           "k": "Electricity",
           "tc": "電力",
           "i": 3,
-          "yoy": 4.2,
+          "yoy": 3.8,
           "m": [
-            0.6,
             -1,
-            0.1
+            0.1,
+            -0.2
           ]
         },
         {
           "k": "Utility (piped) gas",
           "tc": "管道燃氣",
           "i": 3,
-          "yoy": 4.3,
+          "yoy": 4.4,
           "m": [
-            -0.5,
             0.5,
-            0.7
+            0.7,
+            -1.1
           ]
         },
         {
           "k": "All items less food & energy",
           "tc": "核心（扣除食品能源）",
           "i": 1,
-          "yoy": 2.5,
+          "yoy": 2.4,
           "m": [
-            0.2,
             0,
-            0.2
+            0.2,
+            0.3
           ]
         },
         {
           "k": "Commodities less food & energy",
           "tc": "核心商品",
           "i": 2,
-          "yoy": 0.8,
+          "yoy": 0.7,
           "m": [
             -0.1,
-            -0.1,
-            0.2
+            0.2,
+            0.1
           ]
         },
         {
           "k": "New vehicles",
           "tc": "新車",
           "i": 3,
-          "yoy": 0.5,
+          "yoy": 0.6,
           "m": [
-            -0.3,
             0,
-            0.1
+            0.1,
+            0.3
           ]
         },
         {
           "k": "Used cars and trucks",
           "tc": "二手車",
           "i": 3,
-          "yoy": -1.9,
+          "yoy": -2.3,
           "m": [
-            0.1,
             -0.2,
+            0.4,
             0.4
           ]
         },
@@ -2073,11 +2073,11 @@ const DATA = {
           "k": "Apparel",
           "tc": "服飾",
           "i": 3,
-          "yoy": 3.9,
+          "yoy": 3.6,
           "m": [
-            0.3,
             -0.6,
-            0.1
+            0.1,
+            0
           ]
         },
         {
@@ -2086,9 +2086,9 @@ const DATA = {
           "i": 3,
           "yoy": -2.7,
           "m": [
-            -0.7,
             -0.2,
-            -0.6
+            -0.6,
+            -0.2
           ]
         },
         {
@@ -2097,49 +2097,48 @@ const DATA = {
           "i": 2,
           "yoy": 3,
           "m": [
-            0.3,
             0,
-            0.2
+            0.2,
+            0.3
           ]
         },
         {
           "k": "Shelter",
           "tc": "居住",
           "i": 3,
-          "yoy": 3.2,
+          "yoy": 3,
           "m": [
-            0.3,
             0.1,
-            0.1
+            0.1,
+            0.3
           ]
         },
         {
           "k": "Transportation services",
           "tc": "運輸服務",
           "i": 3,
-          "yoy": 2.9,
+          "yoy": 2.4,
           "m": [
-            -0.6,
             -0.3,
-            0.3
+            0.3,
+            0.5
           ]
         },
         {
           "k": "Medical care services",
           "tc": "醫療服務",
           "i": 3,
-          "yoy": 2.7,
+          "yoy": 2.5,
           "m": [
-            0.5,
             -0.1,
-            0.6
+            0.6,
+            -0.2
           ]
         }
       ]
     },
     "series": {
       "labels": [
-        "Jan '25",
         "Feb '25",
         "Mar '25",
         "Apr '25",
@@ -2156,10 +2155,10 @@ const DATA = {
         "Apr '26",
         "May '26",
         "Jun '26",
-        "Jul '26"
+        "Jul '26",
+        "Aug '26"
       ],
       "headline": [
-        3,
         2.8,
         2.4,
         2.3,
@@ -2176,10 +2175,10 @@ const DATA = {
         3.8,
         4.2,
         3.5,
+        3.4,
         3.4
       ],
       "core": [
-        3.3,
         3.1,
         2.8,
         2.8,
@@ -2196,7 +2195,8 @@ const DATA = {
         2.8,
         2.9,
         2.6,
-        2.5
+        2.5,
+        2.4
       ]
     }
   },
@@ -2664,7 +2664,7 @@ const DATA = {
       "saar": 1.5
     },
     "nowcast": {
-      "coreNext": 2.8
+      "coreNext": 2.7
     },
     "series": {
       "labels": [
